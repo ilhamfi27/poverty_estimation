@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block page_content %}
+
+{% block head_css %}
+<link rel="stylesheet"
+    href="{% static 'admin_argon/assets/vendor/datatables.net-bs4/css/dataTables.bootstrap4.min.css' %}"
+    type="text/css">
+{% endblock %}
+
+{% load static %}
+<!-- Page content -->
+<div class="container-fluid mt--6">
+    <div class="row">
+        <div class="col-xl">
+            <div class="card">
+                <div class="card-header bg-transparent">
+                    <div class="row align-items-center">
+                        <div class="col">
+                            <h6 class="text-uppercase text-muted ls-1 mb-1">Dataset</h6>
+                            <h5 class="h3 mb-0">Data</h5>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <div>
+                            <table class="table align-items-center" id="js-dataset-table">
+                                <thead class="thead-light">
+                                    <tr>
+                                        {% for header in table_header %}
+                                        <th scope="col">{{ header }}</th>
+                                        {% endfor %}
+                                    </tr>
+                                </thead>
+                                <tbody class="list">
+                                    {% for data in table_data %}
+                                    <tr>
+                                        <td>{{ forloop.counter }}</td>
+                                        {% for key, value in data.items %}
+                                        {% if key not in '_state, id' %}
+                                        <td>{{ value }}</td>
+                                        {% endif %}
+                                        {% endfor %}
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% include 'footer.html' %}
+</div>
+{% endblock %}
+
+{% block footer_js %}
+<script src="{% static 'admin_argon/assets/vendor/datatables.net/js/jquery.dataTables.min.js' %}"></script>
+<script src="{% static 'admin_argon/assets/vendor/datatables.net-bs4/js/dataTables.bootstrap4.min.js' %}"></script>
+<script>
+    $(document).ready(function () {
+        $('#js-dataset-table').dataTable()
+    });
+</script>
+{% endblock %}

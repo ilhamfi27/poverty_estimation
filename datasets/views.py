@@ -1,9 +1,10 @@
 from django.shortcuts import render
 from .models import Dataset
+from .models import City
 import pandas as pd
 
 dataset_column_names = [
-    'city_id', 'BPS_poverty_rate', 'sum_price_car', 'avg_price_car', 'std_price_car', 'sum_sold_car',
+    'no', 'city_id', 'BPS_poverty_rate', 'sum_price_car', 'avg_price_car', 'std_price_car', 'sum_sold_car',
     'avg_sold_car', 'std_sold_car', 'sum_viewer_car', 'avg_viewer_car', 'std_viewer_car', 'sum_buyer_car',
     'avg_buyer_car', 'std_buyer_car', 'sum_price_motor', 'avg_price_motor', 'std_price_motor', 'sum_sold_motor',
     'avg_sold_motor', 'std_sold_motor', 'sum_viewer_motor', 'avg_viewer_motor', 'std_viewer_motor',
@@ -27,10 +28,13 @@ dataset_column_names = [
     'std_buyer_land_rent'
 ]
 
+city_column_names = [
+    'id', 'name', 'latitude', 'longitude', 'province'
+]
 
 def new(request):
     if request.method == 'GET':
-        return render(request, 'new.html', {})
+        return render(request, 'datasets/new.html', {})
     else:
         source_file = request.FILES['dataset_source']
         file_extension = repr(str(source_file).split('.')[-1])
@@ -49,17 +53,36 @@ def new(request):
 
             dataset_insert(zipped_data)
 
-        return render(request, 'new.html', {})
+        return render(request, 'datasets/new.html', {})
 
 
 def list(request):
     table_header = dataset_column_names
     table_data = Dataset.objects.all()
 
-    print(table_data, flush=True)
+    dataset_data = [data.__dict__ for data in table_data]
 
-    return render(request, 'list.html', {'table_header': table_header})
+    context = {
+        'table_header': table_header,
+        'table_data': dataset_data,
+    }
+
+    return render(request, 'datasets/list.html', context)
 
 
 def dataset_insert(data):
     return Dataset.objects.create(**data)
+
+
+def city_list(request):
+    table_header = city_column_names
+    table_data = City.objects.all()
+
+    city_data = [data.__dict__ for data in table_data]
+
+    context = {
+        'table_header': table_header,
+        'table_data': city_data,
+    }
+
+    return render(request, 'datasets/city_list.html', context)

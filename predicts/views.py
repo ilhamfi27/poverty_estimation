@@ -1,12 +1,12 @@
 from django.shortcuts import render
 
 def index(request):
-    return render(request, 'index.html', {})
+    return render(request, 'predicts/index.html', {})
 
 
 def predictor(request):
-    return render(request, 'predictor.html', {})
+    return render(request, 'predicts/predictor.html', {})
 
 
 def mapping(request):
-    return render(request, 'mapping.html', {})
+    return render(request, 'predicts/mapping.html', {})

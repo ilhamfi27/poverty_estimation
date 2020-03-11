@@ -1,0 +1,149 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block head_css %}
+<link rel="stylesheet" href="{% static 'select2/select2.min.css' %}" type="text/css">
+{% endblock %}
+
+{% block page_content %}
+<!-- Page content -->
+<div class="container-fluid mt--6">
+    <div class="row">
+        <div class="col-xl-7">
+            <div class="card">
+                <div class="card-header bg-transparent">
+                    <div class="row align-items-center">
+                        <div class="col">
+                            <h6 class="text-uppercase text-muted ls-1 mb-1">Customize</h6>
+                            <h5 class="h3 mb-0">Data Prediction</h5>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <form>
+                        <div class="form-group">
+                            <label for="dataset-title" class="form-control-label">Dependent Column</label>
+                            <select class="form-control dependent-variable" name="dependent_column">
+                                <option></option>
+                                <option>Car</option>
+                                <option>Bike</option>
+                                <option>Scooter</option>
+                                <option>Cycle</option>
+                                <option>Horse</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="dataset-title" class="form-control-label">Ignored Columns</label>
+                            <select multiple="multiple" class="form-control ignored-columns" name="ignored_columns">
+                                <option></option>
+                                <option>Car</option>
+                                <option>Bike</option>
+                                <option>Scooter</option>
+                                <option>Cycle</option>
+                                <option>Horse</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="dataset-source" class="form-control-label">Data for Predict</label>
+                            <div class="custom-control custom-radio mb-3">
+                                <input type="radio" id="all-data-radio" name="data_used" class="custom-control-input">
+                                <label class="custom-control-label" for="all-data-radio">All Data</label>
+                            </div>
+                            <div class="custom-control custom-radio">
+                                <input type="radio" id="specific-data-radio" name="data_used"
+                                    class="custom-control-input">
+                                <label class="custom-control-label" for="specific-data-radio">Specific</label>
+                            </div>
+                            <div class="form-group">
+                                <div class="custom-control custom-checkbox">
+                                    <input type="checkbox" class="custom-control-input" id="select-columns">
+                                    <label class="custom-control-label" for="select-columns">Columns</label>
+
+                                    <div class="form-group">
+                                        <select multiple="multiple" class="form-control ignored-columns"
+                                            name="ignored_columns">
+                                            <option></option>
+                                            <option>Car</option>
+                                            <option>Bike</option>
+                                            <option>Scooter</option>
+                                            <option>Cycle</option>
+                                            <option>Horse</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="custom-control custom-checkbox">
+                                    <input type="checkbox" class="custom-control-input" id="select-rows">
+                                    <label class="custom-control-label" for="select-rows">Rows</label>
+                                    <div class="form-group">
+                                        <label for="row-start" class="form-control-label">Row Start</label>
+                                        <input class="form-control" type="number" placeholder="Row Start"
+                                            id="row-start">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="row-end" class="form-control-label">Row End</label>
+                                        <input class="form-control" type="number" placeholder="Row end"
+                                            id="row-end">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <button type="button" class="btn btn-primary float-right">Submit</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-5">
+            <div class="card bg-default">
+                <div class="card-header bg-default">
+                    <div class="row align-items-center">
+                        <div class="col">
+                            <h6 class="text-light text-uppercase ls-1 mb-1">Predict</h6>
+                            <h5 class="h3 text-white mb-0">Result</h5>
+                        </div>
+                        <div class="col">
+                            <ul class="nav nav-pills justify-content-end">
+                                <li class="nav-item mr-2 mr-md-0" data-toggle="chart" data-target="#chart-sales-dark"
+                                    data-update='{"data":{"datasets":[{"data":[0, 20, 10, 30, 15, 40, 20, 60, 60]}]}}'
+                                    data-prefix="$" data-suffix="k">
+                                    <a href="#" class="nav-link py-2 px-3 active" data-toggle="tab">
+                                        <span class="d-none d-md-block">Month</span>
+                                        <span class="d-md-none">M</span>
+                                    </a>
+                                </li>
+                                <li class="nav-item" data-toggle="chart" data-target="#chart-sales-dark"
+                                    data-update='{"data":{"datasets":[{"data":[0, 20, 5, 25, 10, 30, 15, 40, 40]}]}}'
+                                    data-prefix="$" data-suffix="k">
+                                    <a href="#" class="nav-link py-2 px-3" data-toggle="tab">
+                                        <span class="d-none d-md-block">Week</span>
+                                        <span class="d-md-none">W</span>
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <!-- Chart -->
+                    <div class="chart">
+                        <!-- Chart wrapper -->
+                        <canvas id="chart-sales-dark" class="chart-canvas"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% include 'footer.html' %}
+</div>
+{% endblock %}
+
+{% block footer_js %}
+<script src="{% static 'select2/select2.min.js' %}"></script>
+<script>
+    $('.dependent-variable').select2({
+        placeholder: "Please select an option",
+    });
+    $('.ignored-columns').select2({
+        placeholder: "Please select an option",
+    });
+</script>
+{% endblock %}
