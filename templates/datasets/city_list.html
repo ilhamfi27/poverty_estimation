@@ -7,6 +7,13 @@
 <link rel="stylesheet"
     href="{% static 'admin_argon/assets/vendor/datatables.net-bs4/css/dataTables.bootstrap4.min.css' %}"
     type="text/css">
+<link rel="stylesheet" href="{% static 'leaflet/leaflet.css' %}" type="text/css">
+<script src="{% static 'leaflet/leaflet.js' %}"></script>
+<style>
+    #mapid {
+        height: 350px;
+    }
+</style>
 {% endblock %}
 
 {% load static %}
@@ -53,6 +60,56 @@
             </div>
         </div>
     </div>
+    <div class="row">
+        <div class="col-xl-6">
+            <div class="card">
+                <div class="card-header bg-transparent">
+                    <div class="row align-items-center">
+                        <div class="col">
+                            <h6 class="text-uppercase text-muted ls-1 mb-1">City</h6>
+                            <h5 class="h3 mb-0">Form</h5>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <form>
+                        <div class="form-group">
+                            <label for="city-name" class="form-control-label">City Name</label>
+                            <input class="form-control" type="text" placeholder="City Name" id="city-name">
+                        </div>
+                        <div class="form-group">
+                            <label for="latitude" class="form-control-label">Latitude</label>
+                            <input class="form-control" type="number" placeholder="Latitude" id="latitude">
+                        </div>
+                        <div class="form-group">
+                            <label for="longitude" class="form-control-label">Longitude</label>
+                            <input class="form-control" type="number" placeholder="Longitude" id="longitude">
+                        </div>
+                        <div class="form-group">
+                            <label for="province" class="form-control-label">Province</label>
+                            <input class="form-control" type="text" placeholder="Province" id="province">
+                        </div>
+                        <button type="button" class="btn btn-primary float-right">Submit</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-6">
+            <div class="card">
+                <div class="card-header bg-transparent">
+                    <div class="row align-items-center">
+                        <div class="col">
+                            <h6 class="text-uppercase text-muted ls-1 mb-1">Mapping</h6>
+                            <h5 class="h3 mb-0">Marker</h5>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div id="mapid"></div>
+                </div>
+            </div>
+        </div>
+    </div>
     {% include 'footer.html' %}
 </div>
 {% endblock %}
@@ -61,8 +118,11 @@
 <script src="{% static 'admin_argon/assets/vendor/datatables.net/js/jquery.dataTables.min.js' %}"></script>
 <script src="{% static 'admin_argon/assets/vendor/datatables.net-bs4/js/dataTables.bootstrap4.min.js' %}"></script>
 <script>
-    $(document).ready(function () {
-        $('#js-city-table').dataTable()
-    });
+    $('#js-city-table').dataTable()
+
+    var mymap = L.map('mapid').setView([-7.166, 109.852], 7);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+    }).addTo(mymap);
 </script>
 {% endblock %}
