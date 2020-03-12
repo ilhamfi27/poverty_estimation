@@ -44,6 +44,7 @@
                                         {% for header in table_header %}
                                         <th scope="col">{{ header }}</th>
                                         {% endfor %}
+                                        <th scope="col">Action</th>
                                     </tr>
                                 </thead>
                                 <tbody class="list">
@@ -55,6 +56,12 @@
                                         <td>{{ value }}</td>
                                         {% endif %}
                                         {% endfor %}
+                                        <td scope="col">
+                                            <button class="btn btn-icon btn-danger btn-delete" type="button"
+                                                data-id-row="{{ data.id }}">
+                                                <span class="btn-inner--icon"><i class="ni ni-basket"></i></span>
+                                            </button>
+                                        </td>
                                     </tr>
                                     {% endfor %}
                                 </tbody>
@@ -96,30 +103,30 @@
                             <div class="tab-content" id="myTabContent">
                                 <div class="tab-pane fade show active" id="tabs-icons-text-1" role="tabpanel"
                                     aria-labelledby="tabs-icons-text-1-tab">
-                                    <form action="" method="POST" enctype="multipart/form-data">
+                                    <form action="{% url 'datasets:city_insert' %}" method="POST">
                                         {% csrf_token %}
                                         <input type="hidden" name="city_id" id="city-id" value="">
                                         <div class="form-group">
                                             <label for="city-name" class="form-control-label">City Name</label>
                                             <input class="form-control" type="text" placeholder="City Name"
-                                                id="city-name">
+                                                id="city-name" name="name" required>
                                         </div>
                                         <div class="form-group">
                                             <label for="latitude" class="form-control-label">Latitude</label>
-                                            <input class="form-control" type="number" placeholder="Latitude"
-                                                id="latitude">
+                                            <input class="form-control" type="text" placeholder="Latitude" id="latitude"
+                                                name="latitude">
                                         </div>
                                         <div class="form-group">
                                             <label for="longitude" class="form-control-label">Longitude</label>
-                                            <input class="form-control" type="number" placeholder="Longitude"
-                                                id="longitude">
+                                            <input class="form-control" type="text" placeholder="Longitude"
+                                                id="longitude" name="longitude">
                                         </div>
                                         <div class="form-group">
                                             <label for="province" class="form-control-label">Province</label>
-                                            <input class="form-control" type="text" placeholder="Province"
-                                                id="province">
+                                            <input class="form-control" type="text" placeholder="Province" id="province"
+                                                name="province" required>
                                         </div>
-                                        <button type="button" class="btn btn-primary float-right">Submit</button>
+                                        <button type="submit" class="btn btn-primary float-right">Submit</button>
                                     </form>
                                 </div>
                                 <div class="tab-pane fade" id="tabs-icons-text-2" role="tabpanel"
@@ -169,39 +176,49 @@
 <script src="{% static 'admin_argon/assets/vendor/datatables.net/js/jquery.dataTables.min.js' %}"></script>
 <script src="{% static 'admin_argon/assets/vendor/datatables.net-bs4/js/dataTables.bootstrap4.min.js' %}"></script>
 <script>
-    $('#js-city-table').dataTable();
+    $('#js-city-table').dataTable({
+        'pageLength': 5,
+    });
 
     var mymap = L.map('mapid').setView([-7.166, 109.852], 7);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
     }).addTo(mymap);
 
-    $('#js-city-table tbody').on('click', 'tr', function () {
+    $('#js-city-table tbody').on('click', 'tr', function (e) {
+        let target = $(e.target);
+        console.log(target);
+        
         let id = $(this).data('id-row');
+        if (target.is('td')) {
+            console.log("TD " + id);
 
-        $.ajax({
-            url: '/datasets/city_detail/',
-            method: 'GET',
-            data: {
-                city_id: id
-            },
-            success: function (res) {
-                let response = res.data;
-                $('#city-id').val(response.id);
-                $('#city-name').val(response.name);
-                $('#latitude').val(response.latitude);
-                $('#longitude').val(response.longitude);
-                $('#province').val(response.province);
+            $.ajax({
+                url: '/datasets/city_detail/',
+                method: 'GET',
+                data: {
+                    city_id: id
+                },
+                success: function (res) {
+                    let response = res.data;
+                    $('#city-id').val(response.id);
+                    $('#city-name').val(response.name);
+                    $('#latitude').val(response.latitude);
+                    $('#longitude').val(response.longitude);
+                    $('#province').val(response.province);
 
-                // scroll to form
-                $('html, body').animate({
-                    scrollTop: $("#js-city-form").offset().top
-                }, 600);
+                    // scroll to form
+                    $('html, body').animate({
+                        scrollTop: $("#js-city-form").offset().top
+                    }, 600);
 
-                // focus on city name
-                $("#city-name").focus();
-            }
-        });
+                    // focus on city name
+                    $("#city-name").focus();
+                }
+            });
+        } else if (target.is('button')){
+            console.log("BUTTON " + id);
+        }
     });
 </script>
 {% endblock %}

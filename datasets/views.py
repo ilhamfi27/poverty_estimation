@@ -1,5 +1,5 @@
 from django.http import JsonResponse
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.forms.models import model_to_dict
 from .models import Dataset
 from .models import City
@@ -101,3 +101,31 @@ def city_detail(request):
         context['data'] = city_response
 
         return JsonResponse(context, content_type="application/json")
+
+def city_insert(request):
+    if request.method == 'POST':
+        city_id = request.POST.get('city_id')
+        name = request.POST.get('name')
+        latitude = request.POST.get('latitude')
+        longitude = request.POST.get('longitude')
+        province = request.POST.get('province')
+
+        if city_id == "":
+            print("MUST INSERT", flush=True)
+            city = City()
+            city.name = name
+            city.latitude = None if latitude == "" else latitude
+            city.longitude = None if longitude == "" else longitude
+            city.province = province
+            city.save()
+
+        else:
+            print("MUST UPDATE", flush=True)
+            city = City.objects.get(pk=city_id)
+            city.name = name
+            city.latitude = None if latitude == "" else latitude
+            city.longitude = None if longitude == "" else longitude
+            city.province = province
+            city.save()
+
+        return redirect('/datasets/city_list/')
