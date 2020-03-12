@@ -13,6 +13,10 @@
     #mapid {
         height: 350px;
     }
+
+    .point_row_table {
+        cursor: pointer;
+    }
 </style>
 {% endblock %}
 
@@ -31,11 +35,12 @@
                     </div>
                 </div>
                 <div class="card-body">
-                    <div class="table-responsive">
+                    <div class="table-responsive table-hover point_row_table">
                         <div>
                             <table class="table align-items-center" id="js-city-table">
                                 <thead class="thead-light">
                                     <tr>
+                                        <th scope="col">No</th>
                                         {% for header in table_header %}
                                         <th scope="col">{{ header }}</th>
                                         {% endfor %}
@@ -43,10 +48,10 @@
                                 </thead>
                                 <tbody class="list">
                                     {% for data in table_data %}
-                                    <tr>
+                                    <tr data-id-row="{{ data.id }}">
                                         <td>{{ forloop.counter }}</td>
                                         {% for key, value in data.items %}
-                                        {% if key not in '_state, id' %}
+                                        {% if key != id %}
                                         <td>{{ value }}</td>
                                         {% endif %}
                                         {% endfor %}
@@ -62,7 +67,7 @@
     </div>
     <div class="row">
         <div class="col-xl-6">
-            <div class="card">
+            <div class="card" id="js-city-form">
                 <div class="card-header bg-transparent">
                     <div class="row align-items-center">
                         <div class="col">
@@ -72,25 +77,71 @@
                     </div>
                 </div>
                 <div class="card-body">
-                    <form>
-                        <div class="form-group">
-                            <label for="city-name" class="form-control-label">City Name</label>
-                            <input class="form-control" type="text" placeholder="City Name" id="city-name">
+                    <div class="nav-wrapper">
+                        <ul class="nav nav-pills nav-fill flex-column flex-md-row" id="tabs-icons-text" role="tablist">
+                            <li class="nav-item">
+                                <a class="nav-link mb-sm-3 mb-md-0 active" id="tabs-icons-text-1-tab" data-toggle="tab"
+                                    href="#tabs-icons-text-1" role="tab" aria-controls="tabs-icons-text-1"
+                                    aria-selected="true"><i class="ni ni-cloud-upload-96 mr-2"></i>Form Insert</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link mb-sm-3 mb-md-0" id="tabs-icons-text-2-tab" data-toggle="tab"
+                                    href="#tabs-icons-text-2" role="tab" aria-controls="tabs-icons-text-2"
+                                    aria-selected="false"><i class="ni ni-bell-55 mr-2"></i>File Import</a>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="card shadow">
+                        <div class="card-body">
+                            <div class="tab-content" id="myTabContent">
+                                <div class="tab-pane fade show active" id="tabs-icons-text-1" role="tabpanel"
+                                    aria-labelledby="tabs-icons-text-1-tab">
+                                    <form action="" method="POST" enctype="multipart/form-data">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="city_id" id="city-id" value="">
+                                        <div class="form-group">
+                                            <label for="city-name" class="form-control-label">City Name</label>
+                                            <input class="form-control" type="text" placeholder="City Name"
+                                                id="city-name">
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="latitude" class="form-control-label">Latitude</label>
+                                            <input class="form-control" type="number" placeholder="Latitude"
+                                                id="latitude">
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="longitude" class="form-control-label">Longitude</label>
+                                            <input class="form-control" type="number" placeholder="Longitude"
+                                                id="longitude">
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="province" class="form-control-label">Province</label>
+                                            <input class="form-control" type="text" placeholder="Province"
+                                                id="province">
+                                        </div>
+                                        <button type="button" class="btn btn-primary float-right">Submit</button>
+                                    </form>
+                                </div>
+                                <div class="tab-pane fade" id="tabs-icons-text-2" role="tabpanel"
+                                    aria-labelledby="tabs-icons-text-2-tab">
+                                    <form action="{% url 'datasets:new' %}" method="POST" enctype="multipart/form-data">
+                                        {% csrf_token %}
+                                        <div class="form-group">
+                                            <label for="cities-source" class="form-control-label">Cities File</label>
+                                            <div class="custom-file">
+                                                <input type="file" class="custom-file-input" id="cities-source"
+                                                    name='cities_source'
+                                                    accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel">
+                                                <label class="custom-file-label" for="customFileLang">Select
+                                                    file</label>
+                                            </div>
+                                        </div>
+                                        <button type="submit" class="btn btn-primary float-right">Submit</button>
+                                    </form>
+                                </div>
+                            </div>
                         </div>
-                        <div class="form-group">
-                            <label for="latitude" class="form-control-label">Latitude</label>
-                            <input class="form-control" type="number" placeholder="Latitude" id="latitude">
-                        </div>
-                        <div class="form-group">
-                            <label for="longitude" class="form-control-label">Longitude</label>
-                            <input class="form-control" type="number" placeholder="Longitude" id="longitude">
-                        </div>
-                        <div class="form-group">
-                            <label for="province" class="form-control-label">Province</label>
-                            <input class="form-control" type="text" placeholder="Province" id="province">
-                        </div>
-                        <button type="button" class="btn btn-primary float-right">Submit</button>
-                    </form>
+                    </div>
                 </div>
             </div>
         </div>
@@ -118,11 +169,39 @@
 <script src="{% static 'admin_argon/assets/vendor/datatables.net/js/jquery.dataTables.min.js' %}"></script>
 <script src="{% static 'admin_argon/assets/vendor/datatables.net-bs4/js/dataTables.bootstrap4.min.js' %}"></script>
 <script>
-    $('#js-city-table').dataTable()
+    $('#js-city-table').dataTable();
 
     var mymap = L.map('mapid').setView([-7.166, 109.852], 7);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
     }).addTo(mymap);
+
+    $('#js-city-table tbody').on('click', 'tr', function () {
+        let id = $(this).data('id-row');
+
+        $.ajax({
+            url: '/datasets/city_detail/',
+            method: 'GET',
+            data: {
+                city_id: id
+            },
+            success: function (res) {
+                let response = res.data;
+                $('#city-id').val(response.id);
+                $('#city-name').val(response.name);
+                $('#latitude').val(response.latitude);
+                $('#longitude').val(response.longitude);
+                $('#province').val(response.province);
+
+                // scroll to form
+                $('html, body').animate({
+                    scrollTop: $("#js-city-form").offset().top
+                }, 600);
+
+                // focus on city name
+                $("#city-name").focus();
+            }
+        });
+    });
 </script>
 {% endblock %}

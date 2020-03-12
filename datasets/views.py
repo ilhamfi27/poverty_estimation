@@ -1,4 +1,6 @@
+from django.http import JsonResponse
 from django.shortcuts import render
+from django.forms.models import model_to_dict
 from .models import Dataset
 from .models import City
 import pandas as pd
@@ -78,7 +80,7 @@ def city_list(request):
     table_header = city_column_names
     table_data = City.objects.all()
 
-    city_data = [data.__dict__ for data in table_data]
+    city_data = [model_to_dict(data) for data in table_data]
 
     context = {
         'table_header': table_header,
@@ -86,3 +88,16 @@ def city_list(request):
     }
 
     return render(request, 'datasets/city_list.html', context)
+
+
+def city_detail(request):
+    if request.method == 'GET':
+        city_id = request.GET.get('city_id')
+        city = City.objects.get(pk=city_id)
+        city_response = model_to_dict(city)
+
+        context = {}
+        context['success'] = True
+        context['data'] = city_response
+
+        return JsonResponse(context, content_type="application/json")
