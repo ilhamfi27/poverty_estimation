@@ -176,6 +176,11 @@
 <script src="{% static 'admin_argon/assets/vendor/datatables.net/js/jquery.dataTables.min.js' %}"></script>
 <script src="{% static 'admin_argon/assets/vendor/datatables.net-bs4/js/dataTables.bootstrap4.min.js' %}"></script>
 <script>
+    let defaultLocation = {
+        'latitude': -7.166,
+        'longitude': 109.852,
+    };
+
     $('#js-city-table').dataTable({
         'pageLength': 5,
     });
@@ -187,11 +192,9 @@
 
     $('#js-city-table tbody').on('click', 'tr', function (e) {
         let target = $(e.target);
-        console.log(target);
-        
         let id = $(this).data('id-row');
+
         if (target.is('td')) {
-            console.log("TD " + id);
 
             $.ajax({
                 url: '/datasets/city_detail/',
@@ -217,7 +220,6 @@
                 }
             });
         } else if (target.is('button')){
-            console.log("BUTTON " + id);
         }
     });
 </script>
