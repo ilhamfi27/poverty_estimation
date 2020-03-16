@@ -105,7 +105,6 @@
                                     aria-labelledby="tabs-icons-text-1-tab">
                                     <form action="{% url 'datasets:city_insert' %}" method="POST">
                                         {% csrf_token %}
-                                        <input type="hidden" name="city_id" id="city-id" value="">
                                         <div class="form-group">
                                             <label for="city-name" class="form-control-label">City Name</label>
                                             <input class="form-control" type="text" placeholder="City Name"
@@ -127,6 +126,7 @@
                                                 name="province" required>
                                         </div>
                                         <button type="submit" class="btn btn-primary float-right">Submit</button>
+                                        <button type="reset" class="btn btn-light float-right">Reset</button>
                                     </form>
                                 </div>
                                 <div class="tab-pane fade" id="tabs-icons-text-2" role="tabpanel"
@@ -180,19 +180,21 @@
         'latitude': -7.166,
         'longitude': 109.852,
     };
+    let theMap = L.map('mapid').setView([-7.166, 109.852], 7);
+    let marker = L.marker(theMap.getCenter()).addTo(theMap);
 
     $('#js-city-table').dataTable({
         'pageLength': 5,
     });
 
-    var mymap = L.map('mapid').setView([-7.166, 109.852], 7);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-    }).addTo(mymap);
+    }).addTo(theMap);
 
     $('#js-city-table tbody').on('click', 'tr', function (e) {
         let target = $(e.target);
         let id = $(this).data('id-row');
+        let row = $(this);
 
         if (target.is('td')) {
 
@@ -204,11 +206,13 @@
                 },
                 success: function (res) {
                     let response = res.data;
-                    $('#city-id').val(response.id);
                     $('#city-name').val(response.name);
                     $('#latitude').val(response.latitude);
                     $('#longitude').val(response.longitude);
                     $('#province').val(response.province);
+
+                    updateMapVIew(response.latitude, response.longitude);
+                    addMapMarker(response.latitude, response.longitude);
 
                     // scroll to form
                     $('html, body').animate({
@@ -219,8 +223,51 @@
                     $("#city-name").focus();
                 }
             });
-        } else if (target.is('button')){
+        } else if (target.is('button > span > i, button')) {
+            Swal.fire({
+                title: 'Are you sure?',
+                text: "You won't be able to revert this!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Yes, delete it!'
+            }).then((result) => {
+                if (result.value) {
+                    $.ajax({
+                        url: '/datasets/city_delete/',
+                        method: 'GET',
+                        data: {
+                            city_id: id
+                        },
+                        success: function () {
+                            row.remove();
+                            Swal.fire(
+                                'Deleted!',
+                                'The city has been deleted.',
+                                'success'
+                            );
+                        },
+                        error: function () {
+                            Swal.fire({
+                                title: 'Oops!',
+                                text: "Something Wrong!",
+                                icon: 'error',
+                                confirmButtonColor: '#3085d6',
+                            });
+                        }
+                    });
+                }
+            });
         }
     });
+
+    function updateMapVIew(latitude, longitude) {
+        theMap.panTo(new L.LatLng(latitude, longitude));
+    }
+
+    function addMapMarker(latitude, longitude) {
+        marker.setLatLng(new L.LatLng(latitude, longitude));
+    }
 </script>
 {% endblock %}

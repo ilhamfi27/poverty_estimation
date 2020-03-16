@@ -5,6 +5,7 @@ class City(models.Model):
     latitude = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
     longitude = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
     province = models.CharField(max_length=40, default="")
+    deleted = models.BooleanField(default=False)
 
     class Meta:
         db_table = 'cities'

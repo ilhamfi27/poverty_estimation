@@ -6,7 +6,7 @@ from .models import City
 import pandas as pd
 
 dataset_column_names = [
-    'no', 'city_id', 'BPS_poverty_rate', 'sum_price_car', 'avg_price_car', 'std_price_car', 'sum_sold_car',
+    'city_id', 'BPS_poverty_rate', 'sum_price_car', 'avg_price_car', 'std_price_car', 'sum_sold_car',
     'avg_sold_car', 'std_sold_car', 'sum_viewer_car', 'avg_viewer_car', 'std_viewer_car', 'sum_buyer_car',
     'avg_buyer_car', 'std_buyer_car', 'sum_price_motor', 'avg_price_motor', 'std_price_motor', 'sum_sold_motor',
     'avg_sold_motor', 'std_sold_motor', 'sum_viewer_motor', 'avg_viewer_motor', 'std_viewer_motor',
@@ -60,9 +60,10 @@ def new(request):
 
 def list(request):
     table_header = dataset_column_names
+    table_header.insert(0, 'no')
     table_data = Dataset.objects.all()
 
-    dataset_data = [data.__dict__ for data in table_data]
+    dataset_data = [model_to_dict(data) for data in table_data]
 
     context = {
         'table_header': table_header,
@@ -78,9 +79,9 @@ def dataset_insert(data):
 
 def city_list(request):
     table_header = city_column_names
-    table_data = City.objects.all()
+    table_data = City.objects.values_list('id', 'name', 'latitude', 'longitude', 'province').filter(deleted=False)
 
-    city_data = [model_to_dict(data) for data in table_data]
+    city_data = [dict(zip(city_column_names, data)) for data in table_data]
 
     context = {
         'table_header': table_header,
@@ -90,6 +91,7 @@ def city_list(request):
     return render(request, 'datasets/city_list.html', context)
 
 
+# ajax request handler
 def city_detail(request):
     if request.method == 'GET':
         city_id = request.GET.get('city_id')
@@ -102,30 +104,41 @@ def city_detail(request):
 
         return JsonResponse(context, content_type="application/json")
 
+
+# ajax request handler
+def city_delete(request):
+    if request.method == 'GET':
+        city_id = request.GET.get('city_id')
+        city = City.objects.get(pk=city_id)
+        city.deleted = True
+        city.save()
+
+        context = {}
+        context['success'] = True
+
+        return JsonResponse(context, content_type="application/json")
+
+
 def city_insert(request):
     if request.method == 'POST':
-        city_id = request.POST.get('city_id')
-        name = request.POST.get('name')
-        latitude = request.POST.get('latitude')
-        longitude = request.POST.get('longitude')
-        province = request.POST.get('province')
+        data = {}
+        data['name'] = request.POST.get('name')
+        data['latitude'] = request.POST.get('latitude')
+        data['longitude'] = request.POST.get('longitude')
+        data['province'] = request.POST.get('province')
 
-        if city_id == "":
-            print("MUST INSERT", flush=True)
-            city = City()
-            city.name = name
-            city.latitude = None if latitude == "" else latitude
-            city.longitude = None if longitude == "" else longitude
-            city.province = province
-            city.save()
-
-        else:
-            print("MUST UPDATE", flush=True)
-            city = City.objects.get(pk=city_id)
-            city.name = name
-            city.latitude = None if latitude == "" else latitude
-            city.longitude = None if longitude == "" else longitude
-            city.province = province
-            city.save()
+        city_transaction(data)
 
         return redirect('/datasets/city_list/')
+
+
+def city_transaction(data):
+    data['latitude'] = None if data['latitude'] == "" else data['latitude']
+    data['longitude'] = None if data['longitude'] == "" else data['longitude']
+
+    print(data, flush=True)
+
+    city, created = City.objects.update_or_create(
+        name=data['name'], province=data['province'],
+        defaults=data,
+    )
