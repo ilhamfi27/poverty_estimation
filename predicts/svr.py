@@ -11,15 +11,16 @@ from skfeature.function.statistical_based import chi_square
 from skfeature.function.statistical_based import CFS
 
 
-def predict(dataset_data, fs_algorithm):
+def predict(dataset_data, fs_algorithm, C=1.0, epsilon=0.1):
     sc = MinMaxScaler(feature_range=(0,10))
     dataset_data = [model_to_dict(data) for data in dataset_data]
 
     best_sort_feature = []
 
     df = pd.DataFrame(dataset_data)
-    raw_X = df.iloc[0:, 3:].values  # dataset
-    raw_y = df.iloc[0:, 2].values  # label
+    city_id = df.iloc[0:, 1].values # city id
+    raw_X = df.iloc[0:, 3:].values # dataset
+    raw_y = df.iloc[0:, 2].values # label
 
     # 2. pre-processing
     clean_X = np.nan_to_num(raw_X)
@@ -48,22 +49,28 @@ def predict(dataset_data, fs_algorithm):
 
     # 5. get best feature predict score
     best_pred, best_score, result, ten_column_predictions \
-        = trainf(best_sort_feature, y)
+        = trainf(best_sort_feature, y, C, epsilon)
+
 
     """
     RETURN VALUES
     hasil return dari prediksi SVR
     """
+
+    # modified best prediction return value
+    best_pred = dict(zip(city_id, best_pred))
+
     y_true = y
     return best_pred, best_score, result, ten_column_predictions, y_true
 
 
-def trainf(X, y):
+def trainf(X, y, C=1.0, epsilon=0.1):
     repeat = 0
     X = np.array(X)
     X_column = X.shape[1]
     result = []
     best_score = 0
+    lowest_error = 0
     best_pred = []
     ten_column_predictions = []
 
@@ -75,7 +82,7 @@ def trainf(X, y):
             repeat += 10
 
         # predict
-        regressor = SVR(gamma='scale', C=60.0, epsilon=0.2)
+        regressor = SVR(gamma='scale', C=C, epsilon=epsilon)
         y_pred = []
         y_true = []
 
@@ -105,5 +112,6 @@ def trainf(X, y):
         if best_score < accuracy_score:
             best_pred = y_pred
             best_score = accuracy_score
+            lowest_error = rmse_score
 
-    return best_pred, best_score, result, ten_column_predictions
+    return best_pred, [best_score, lowest_error], result, ten_column_predictions

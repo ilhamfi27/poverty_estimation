@@ -1,5 +1,6 @@
 from django.shortcuts import render, redirect
-from datasets.models import Dataset
+from datasets.models import Dataset, City
+from .models import Prediction, PredictionResult
 from .svr import *
 import json
 
@@ -28,6 +29,10 @@ dataset_column_names = [
     'std_buyer_land_rent'
 ]
 
+
+"""
+PREDICTOR VIEWS
+"""
 def index(request):
     return render(request, 'predicts/index.html', {})
 
@@ -42,25 +47,58 @@ def predictor(request):
         pass
     elif request.method == "POST":
         fs_algorithm = request.POST.get("feature_selection")
+        C = 60.0 # ntar diambil dari form
+        epsilon = 0.2 # ntar diambil dari form
 
         dataset_data = Dataset.objects.all()
 
         best_pred, best_score, result, ten_column_predictions, y_true = \
-            predict(dataset_data, fs_algorithm)
+            predict(dataset_data, fs_algorithm, C, epsilon)
 
-        # print("best_pred", best_pred, len(best_pred), flush=True)
-        # print("y_true", y_true, len(y_true), flush=True)
+        data_for_input = {
+            "feature_selection": fs_algorithm,
+            "reguralization": C,
+            "epsilon": epsilon,
+            "accuracy_value": best_score[0],
+            "error_value":  best_score[1],
+            "pred_result": best_pred,
+        }
+
+        save_to_db(data_for_input)
 
         pred_result = []
         real_data = []
-        for i in range(len(best_pred)):
-            each_pred_result = {"x": y_true[i], "y": best_pred[i]}
+        for i, (key, value) in enumerate(best_pred.items()):
+            each_pred_result = {"x": y_true[i], "y": value}
             each_real_data = {"x": y_true[i], "y": y_true[i]}
             pred_result.append(each_pred_result)
             real_data.append(each_real_data)
         context["pred_result"] = json.dumps(pred_result)
         context["real_data"] = json.dumps(real_data)
     return render(request, 'predicts/predictor.html', context=context)
+
+
+def save_to_db(data_dict):
+
+    prediction_data = data_dict
+    prediction_result_values = data_dict["pred_result"]
+    prediction_data.pop("pred_result")
+
+    print(data_dict, flush=True)
+
+
+    prediction = Prediction.objects.create(**prediction_data)
+
+    prediction_results = []
+    for city_id, result in prediction_result_values.items():
+        city = City.objects.get(pk=city_id)
+        prediction_results.append(PredictionResult(
+            city=city,
+            prediction=prediction,
+            result=result,
+        ))
+
+    prediction_result = PredictionResult.objects.bulk_create(prediction_results)
 
 
 def mapping(request):
