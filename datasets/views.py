@@ -34,6 +34,9 @@ city_column_names = [
     'id', 'name', 'latitude', 'longitude', 'province'
 ]
 
+"""
+DATASET VIEWS
+"""
 def new(request):
     if request.method == 'GET':
         return render(request, 'datasets/new.html', {})
@@ -60,7 +63,6 @@ def new(request):
 
 def list(request):
     table_header = dataset_column_names
-    table_header.insert(0, 'no')
     table_data = Dataset.objects.all()
 
     dataset_data = [model_to_dict(data) for data in table_data]
@@ -77,6 +79,9 @@ def dataset_insert(data):
     return Dataset.objects.create(**data)
 
 
+"""
+CITY VIEWS
+"""
 def city_list(request):
     table_header = city_column_names
     table_data = City.objects.values_list('id', 'name', 'latitude', 'longitude', 'province').filter(deleted=False)

@@ -10,7 +10,7 @@
 <link rel="stylesheet" href="{% static 'leaflet/leaflet.css' %}" type="text/css">
 <script src="{% static 'leaflet/leaflet.js' %}"></script>
 <style>
-    #mapid {
+    .city-map {
         height: 350px;
     }
 
@@ -163,7 +163,7 @@
                     </div>
                 </div>
                 <div class="card-body">
-                    <div id="mapid"></div>
+                    <div id="js-city-map" class="city-map"></div>
                 </div>
             </div>
         </div>
@@ -180,7 +180,7 @@
         'latitude': -7.166,
         'longitude': 109.852,
     };
-    let theMap = L.map('mapid').setView([-7.166, 109.852], 7);
+    let theMap = L.map('js-city-map').setView([-7.166, 109.852], 7);
     let marker = L.marker(theMap.getCenter()).addTo(theMap);
 
     $('#js-city-table').dataTable({
