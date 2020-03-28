@@ -108,7 +108,7 @@
                     <!-- Chart -->
                     <div class="chart">
                         <!-- Chart wrapper -->
-                        <canvas id="chart-pred"></canvas>
+                        <canvas id="chart-pred" data-pred-result="{{ pred_result }}" data-pred-true="{{ real_data }}"></canvas>
                     </div>
                 </div>
             </div>
@@ -130,8 +130,8 @@ $(document).ready(function() {
     });
     
     const chart = $('#chart-pred');
-    let pred_result = {{ pred_result|safe }};
-    let real_data = {{ real_data|safe }};
+    let pred_result = chart.data("predResult");
+    let real_data = chart.data("predTrue");
 
     var scatterChartData = {
         datasets: [
