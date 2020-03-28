@@ -1,3 +1,4 @@
+from django.http import JsonResponse
 from django.shortcuts import render, redirect
 from datasets.models import Dataset, City
 from .models import Prediction, PredictionResult
@@ -29,6 +30,25 @@ dataset_column_names = [
     'std_buyer_land_rent'
 ]
 
+prediction_result_table_header = [
+    "name",
+    "feature selection",
+    "reguralization",
+    "epsilon",
+    "accuracy value",
+    "error value",
+]
+
+prediction_column_names = [
+    "id",
+    "name",
+    "feature_selection",
+    "reguralization",
+    "epsilon",
+    "accuracy value",
+    "error_value",
+]
+
 
 """
 PREDICTOR VIEWS
@@ -38,11 +58,26 @@ def index(request):
 
 
 def predictor(request):
+    table_data = Prediction.objects.values_list("id",
+                                               "name",
+                                               "feature_selection",
+                                               "reguralization",
+                                               "epsilon",
+                                               "accuracy_value",
+                                               "error_value")
+
+    prediction_data = [dict(zip(prediction_column_names, data)) for data in table_data]
+
+    print(prediction_data, flush=True)
+
     context = {
         'dataset_column_names': dataset_column_names,
         'chart_data': [],
         'real_data': [],
+        'table_header': prediction_result_table_header,
+        'prediction_data': prediction_data
     }
+
     if request.method == "GET":
         pass
     elif request.method == "POST":
@@ -84,9 +119,6 @@ def save_to_db(data_dict):
     prediction_result_values = data_dict["pred_result"]
     prediction_data.pop("pred_result")
 
-    print(data_dict, flush=True)
-
-
     prediction = Prediction.objects.create(**prediction_data)
 
     prediction_results = []
@@ -99,6 +131,22 @@ def save_to_db(data_dict):
         ))
 
     prediction_result = PredictionResult.objects.bulk_create(prediction_results)
+
+# ajax request handler
+# ###########################################
+# TODO
+# ###########################################
+def prediction_result(request):
+    if request.method == 'GET':
+        prediction_id = request.GET.get('prediction_id')
+        prediction = Prediction.objects.get(pk=prediction_id)
+        prediction_response = model_to_dict(prediction)
+
+        context = {}
+        context['success'] = True
+        context['data'] = prediction_response
+
+        return JsonResponse(context, content_type="application/json")
 
 
 def mapping(request):

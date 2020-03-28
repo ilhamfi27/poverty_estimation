@@ -37,7 +37,8 @@
                             <div class="custom-control custom-radio">
                                 <input type="radio" id="cfs-radio" name="feature_selection" value="cfs"
                                     class="custom-control-input" required>
-                                <label class="custom-control-label" for="cfs-radio">Correlation-based Feature Selection</label>
+                                <label class="custom-control-label" for="cfs-radio">Correlation-based Feature
+                                    Selection</label>
                             </div>
                         </div>
                         <button type="submit" class="btn btn-primary float-right">Submit</button>
@@ -61,7 +62,57 @@
                     <!-- Chart -->
                     <div class="chart">
                         <!-- Chart wrapper -->
-                        <canvas id="chart-pred" data-pred-result="{{ pred_result }}" data-pred-true="{{ real_data }}"></canvas>
+                        <canvas id="chart-pred" data-pred-result="{{ pred_result }}"
+                            data-pred-true="{{ real_data }}"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-xl">
+            <div class="card">
+                <div class="card-header bg-transparent">
+                    <div class="row align-items-center">
+                        <div class="col">
+                            <h6 class="text-uppercase text-muted ls-1 mb-1">Prediction</h6>
+                            <h5 class="h3 mb-0">Result</h5>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive table-hover point_row_table">
+                        <div>
+                            <table class="table align-items-center" id="js-city-table">
+                                <thead class="thead-light">
+                                    <tr>
+                                        <th scope="col">No</th>
+                                        {% for header in table_header %}
+                                        <th scope="col">{{ header }}</th>
+                                        {% endfor %}
+                                        <th scope="col">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="list">
+                                    {% for data in prediction_data %}
+                                    <tr data-id-row="{{ data.id }}">
+                                        <td>{{ forloop.counter }}</td>
+                                        {% for key, value in data.items %}
+                                        {% if key != 'id' %}
+                                        <td>{{ value }}</td>
+                                        {% endif %}
+                                        {% endfor %}
+                                        <td scope="col">
+                                            <button class="btn btn-icon btn-danger btn-delete" type="button"
+                                                data-id-row="{{ data.id }}">
+                                                <span class="btn-inner--icon"><i class="ni ni-basket"></i></span>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -74,50 +125,49 @@
 {% block footer_js %}
 <script src="{% static 'select2/select2.min.js' %}"></script>
 <script>
-$(document).ready(function() {
-    $('.dependent-variable').select2({
-        placeholder: "Please select an option",
-    });
-    $('.ignored-columns').select2({
-        placeholder: "Please select an option",
-    });
-    
-    const chart = $('#chart-pred');
-    let pred_result = chart.data("predResult");
-    let real_data = chart.data("predTrue");
+    $(document).ready(function () {
+        $('.dependent-variable').select2({
+            placeholder: "Please select an option",
+        });
+        $('.ignored-columns').select2({
+            placeholder: "Please select an option",
+        });
 
-    var scatterChartData = {
-        datasets: [
-            {
-                label: 'Prediction Result',
-                borderColor: 'red',
-                backgroundColor: 'rgba(255,0,0,0.5)',
-                data: pred_result,
-                showLine: false,
-            }, 
-            {
-                label: 'Trend',
-                data: real_data,
-                type: 'line',
-                pointRadius: 0,
-                borderColor: 'yellow',
-                backgroundColor: 'rgba(255,255,255,0.0)',
+        const chart = $('#chart-pred');
+        let pred_result = chart.data("predResult");
+        let real_data = chart.data("predTrue");
+
+        var scatterChartData = {
+            datasets: [{
+                    label: 'Prediction Result',
+                    borderColor: 'red',
+                    backgroundColor: 'rgba(255,0,0,0.5)',
+                    data: pred_result,
+                    showLine: false,
+                },
+                {
+                    label: 'Trend',
+                    data: real_data,
+                    type: 'line',
+                    pointRadius: 0,
+                    borderColor: 'yellow',
+                    backgroundColor: 'rgba(255,255,255,0.0)',
+                }
+            ]
+        };
+
+        var scatterChart = new Chart(chart, {
+            type: 'scatter',
+            data: scatterChartData,
+            options: {
+                title: {
+                    display: true,
+                    text: "Prediction Result",
+                },
+                responsive: true, // Instruct chart js to respond nicely.
+                maintainAspectRatio: false, // Add to prevent default behaviour of full-width/height 
             }
-        ]
-    };
-
-    var scatterChart = new Chart(chart, {
-        type: 'scatter',
-        data: scatterChartData,
-        options: {
-            title: {
-                display: true,
-                text: "Prediction Result",
-            },
-            responsive: true, // Instruct chart js to respond nicely.
-            maintainAspectRatio: false, // Add to prevent default behaviour of full-width/height 
-        }
+        });
     });
-});
 </script>
 {% endblock %}
