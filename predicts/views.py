@@ -36,14 +36,17 @@ def predictor(request):
     context = {
         'dataset_column_names': dataset_column_names,
         'chart_data': [],
+        'real_data': [],
     }
     if request.method == "GET":
-        return render(request, 'predicts/predictor.html', context=context)
+        pass
     elif request.method == "POST":
+        fs_algorithm = request.POST.get("feature_selection")
+
         dataset_data = Dataset.objects.all()
 
         best_pred, best_score, result, ten_column_predictions, y_true = \
-            predict(dataset_data, "f_score")
+            predict(dataset_data, fs_algorithm)
 
         # print("best_pred", best_pred, len(best_pred), flush=True)
         # print("y_true", y_true, len(y_true), flush=True)
@@ -57,7 +60,6 @@ def predictor(request):
             real_data.append(each_real_data)
         context["pred_result"] = json.dumps(pred_result)
         context["real_data"] = json.dumps(real_data)
-    print("context", context, flush=True)
     return render(request, 'predicts/predictor.html', context=context)
 
 
