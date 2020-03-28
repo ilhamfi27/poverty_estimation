@@ -23,68 +23,21 @@
                     <form action="/predicts/predictor/" method="POST">
                         {% csrf_token %}
                         <div class="form-group">
-                            <label for="dataset-title" class="form-control-label">Dependent Column</label>
-                            <select class="form-control dependent-variable" name="dependent_column">
-                                <option></option>
-                                {% for column in dataset_column_names %}
-                                {% if column == "BPS_poverty_rate" %}
-                                <option selected>{{ column }}</option>
-                                {% else %}
-                                <option>{{ column }}</option>
-                                {% endif %}
-                                {% endfor %}
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label for="dataset-title" class="form-control-label">Ignored Columns</label>
-                            <select multiple="multiple" class="form-control ignored-columns" name="ignored_columns">
-                                <option></option>
-                                {% for column in dataset_column_names %}
-                                {% if column == "city_id" %}
-                                <option selected>{{ column }}</option>
-                                {% else %}
-                                <option>{{ column }}</option>
-                                {% endif %}
-                                {% endfor %}
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label for="dataset-source" class="form-control-label">Data for Predict</label>
+                            <label for="dataset-source" class="form-control-label">Feature Selection Algorithm</label>
                             <div class="custom-control custom-radio mb-3">
-                                <input type="radio" id="all-data-radio" name="data_used" value="all_data"
+                                <input type="radio" id="f_score-radio" name="feature_selection" value="f_score"
                                     class="custom-control-input">
-                                <label class="custom-control-label" for="all-data-radio">All Data</label>
+                                <label class="custom-control-label" for="f_score-radio">F-Score</label>
+                            </div>
+                            <div class="custom-control custom-radio mb-3">
+                                <input type="radio" id="chi_square-radio" name="feature_selection" value="chi_square"
+                                    class="custom-control-input">
+                                <label class="custom-control-label" for="chi_square-radio">Chi-square</label>
                             </div>
                             <div class="custom-control custom-radio">
-                                <input type="radio" id="specific-data-radio" name="data_used" value="specific"
+                                <input type="radio" id="cfs-radio" name="feature_selection" value="cfs"
                                     class="custom-control-input">
-                                <label class="custom-control-label" for="specific-data-radio">Specific</label>
-                            </div>
-                            <div class="form-group">
-                                <label for="" class="form-control-label">Columns</label>
-
-                                <div class="form-group">
-                                    <select multiple="multiple" class="form-control ignored-columns"
-                                        name="specific_columns">
-                                        <option></option>
-                                        <option>Car</option>
-                                        <option>Bike</option>
-                                        <option>Scooter</option>
-                                        <option>Cycle</option>
-                                        <option>Horse</option>
-                                    </select>
-                                </div>
-                                <label for="" class="form-control-label">Rows</label>
-                                <div class="form-group">
-                                    <label for="row-start" class="form-control-label">Row Start</label>
-                                    <input class="form-control" type="number" placeholder="Row Start" id="row-start"
-                                        name="row_start">
-                                </div>
-                                <div class="form-group">
-                                    <label for="row-end" class="form-control-label">Row End</label>
-                                    <input class="form-control" type="number" placeholder="Row end" id="row-end"
-                                        name="row_end">
-                                </div>
+                                <label class="custom-control-label" for="cfs-radio">Correlation-based Feature Selection</label>
                             </div>
                         </div>
                         <button type="submit" class="btn btn-primary float-right">Submit</button>
