@@ -90,24 +90,17 @@
                                         {% for header in table_header %}
                                         <th scope="col">{{ header }}</th>
                                         {% endfor %}
-                                        <th scope="col">Action</th>
                                     </tr>
                                 </thead>
                                 <tbody class="list">
                                     {% for data in prediction_data %}
-                                    <tr data-id-row="{{ data.id }}">
-                                        <td>{{ forloop.counter }}</td>
+                                    <tr onclick="getPredictionId({{ data.id }})">
+                                        <td scope="col">{{ forloop.counter }}</td>
                                         {% for key, value in data.items %}
                                         {% if key != 'id' %}
-                                        <td>{{ value }}</td>
+                                        <td scope="col">{{ value }}</td>
                                         {% endif %}
                                         {% endfor %}
-                                        <td scope="col">
-                                            <button class="btn btn-icon btn-danger btn-delete" type="button"
-                                                data-id-row="{{ data.id }}">
-                                                <span class="btn-inner--icon"><i class="ni ni-basket"></i></span>
-                                            </button>
-                                        </td>
                                     </tr>
                                     {% endfor %}
                                 </tbody>
@@ -133,9 +126,8 @@
             placeholder: "Please select an option",
         });
 
-        const chart = $('#chart-pred');
-        let pred_result = chart.data("predResult");
-        let real_data = chart.data("predTrue");
+        let pred_result = $('#chart-pred').data("predResult");
+        let real_data = $('#chart-pred').data("predTrue");
 
         var scatterChartData = {
             datasets: [{
@@ -155,10 +147,13 @@
                 }
             ]
         };
+        drawChart(scatterChartData);
+    });
 
-        var scatterChart = new Chart(chart, {
+    function drawChart(dataset) {
+        var scatterChart = new Chart($('#chart-pred'), {
             type: 'scatter',
-            data: scatterChartData,
+            data: dataset,
             options: {
                 title: {
                     display: true,
@@ -168,6 +163,36 @@
                 maintainAspectRatio: false, // Add to prevent default behaviour of full-width/height 
             }
         });
-    });
+    }
+
+    function getPredictionId(id) {
+        $.ajax({
+            url: `/predicts/prediction_result/${id}/`,
+            method: 'GET',
+            success: function (res) {
+                let response = res.data;
+                console.log(response);
+                var scatterChartData = {
+                    datasets: [{
+                            label: 'Prediction Result',
+                            borderColor: 'red',
+                            backgroundColor: 'rgba(255,0,0,0.5)',
+                            data: response.prediction_results,
+                            showLine: false,
+                        },
+                        {
+                            label: 'Trend',
+                            data: response.real_data,
+                            type: 'line',
+                            pointRadius: 0,
+                            borderColor: 'yellow',
+                            backgroundColor: 'rgba(255,255,255,0.0)',
+                        }
+                    ]
+                };
+                drawChart(scatterChartData);
+            }
+        });
+    }
 </script>
 {% endblock %}

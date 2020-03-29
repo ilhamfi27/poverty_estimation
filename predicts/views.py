@@ -49,26 +49,25 @@ prediction_column_names = [
     "error_value",
 ]
 
-
 """
 PREDICTOR VIEWS
 """
+
+
 def index(request):
     return render(request, 'predicts/index.html', {})
 
 
 def predictor(request):
     table_data = Prediction.objects.values_list("id",
-                                               "name",
-                                               "feature_selection",
-                                               "reguralization",
-                                               "epsilon",
-                                               "accuracy_value",
-                                               "error_value")
+                                                "name",
+                                                "feature_selection",
+                                                "reguralization",
+                                                "epsilon",
+                                                "accuracy_value",
+                                                "error_value")
 
     prediction_data = [dict(zip(prediction_column_names, data)) for data in table_data]
-
-    print(prediction_data, flush=True)
 
     context = {
         'dataset_column_names': dataset_column_names,
@@ -82,8 +81,8 @@ def predictor(request):
         pass
     elif request.method == "POST":
         fs_algorithm = request.POST.get("feature_selection")
-        C = 60.0 # ntar diambil dari form
-        epsilon = 0.2 # ntar diambil dari form
+        C = 60.0  # ntar diambil dari form
+        epsilon = 0.2  # ntar diambil dari form
 
         dataset_data = Dataset.objects.all()
 
@@ -95,7 +94,7 @@ def predictor(request):
             "reguralization": C,
             "epsilon": epsilon,
             "accuracy_value": best_score[0],
-            "error_value":  best_score[1],
+            "error_value": best_score[1],
             "pred_result": best_pred,
         }
 
@@ -114,7 +113,6 @@ def predictor(request):
 
 
 def save_to_db(data_dict):
-
     prediction_data = data_dict
     prediction_result_values = data_dict["pred_result"]
     prediction_data.pop("pred_result")
@@ -132,19 +130,43 @@ def save_to_db(data_dict):
 
     prediction_result = PredictionResult.objects.bulk_create(prediction_results)
 
+
 # ajax request handler
 # ###########################################
 # TODO
 # ###########################################
-def prediction_result(request):
+def prediction_result(request, prediction_id):
     if request.method == 'GET':
-        prediction_id = request.GET.get('prediction_id')
         prediction = Prediction.objects.get(pk=prediction_id)
-        prediction_response = model_to_dict(prediction)
+        prediction_results = PredictionResult.objects.filter(prediction_id=prediction_id)
+
+        pred_result = []
+        the_real_data = []
+        the_data = {}
+        for prediction_data in prediction_results:
+            real_data = Dataset.objects.get(city=prediction_data.city)
+
+            each_pred_result = {"x": real_data.BPS_poverty_rate, "y": prediction_data.result}
+            each_real_data = {"x": real_data.BPS_poverty_rate, "y": real_data.BPS_poverty_rate}
+
+            pred_result.append(each_pred_result)
+            the_real_data.append(each_real_data)
+
+        the_data["name"] = prediction.name
+        the_data["feature_selection"] = prediction.feature_selection
+        the_data["reguralization"] = prediction.reguralization
+        the_data["epsilon"] = prediction.epsilon
+        the_data["created_at"] = prediction.created_at
+        the_data["updated_at"] = prediction.updated_at
+        the_data["accuracy_value"] = prediction.accuracy_value
+        the_data["error_value"] = prediction.error_value
+
+        the_data["prediction_results"] = pred_result
+        the_data["real_data"] = the_real_data
 
         context = {}
         context['success'] = True
-        context['data'] = prediction_response
+        context['data'] = the_data
 
         return JsonResponse(context, content_type="application/json")
 
