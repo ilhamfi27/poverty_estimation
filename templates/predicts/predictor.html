@@ -9,13 +9,13 @@
 <!-- Page content -->
 <div class="container-fluid mt--6">
     <div class="row">
-        <div class="col-xl-7">
+        <div class="col-xl-4">
             <div class="card">
                 <div class="card-header bg-transparent">
                     <div class="row align-items-center">
                         <div class="col">
                             <h6 class="text-uppercase text-muted ls-1 mb-1">Customize</h6>
-                            <h5 class="h3 mb-0">Data Prediction</h5>
+                            <h5 class="h3 mb-0">Experiment</h5>
                         </div>
                     </div>
                 </div>
@@ -41,18 +41,52 @@
                                     Selection</label>
                             </div>
                         </div>
+                        <div class="form-group">
+                            <label for="regularization-input" class="form-control-label">Regularization (C)</label>
+                            <input type="number" class="form-control" id="regularization-input" name="regularization"
+                                placeholder="Regularization (default 1.0)" step=".01">
+                        </div>
+                        <div class="form-group">
+                            <label for="epsilon-input" class="form-control-label">Epsilon</label>
+                            <input type="number" class="form-control" id="epsilon-input" name="epsilon"
+                                placeholder="Epsilon (default 1.0)" step=".01">
+                        </div>
                         <button type="submit" class="btn btn-primary float-right">Submit</button>
                     </form>
                 </div>
             </div>
         </div>
-        <div class="col-xl-5">
+        <div class="col-xl-4">
             <div class="card">
                 <div class="card-header">
                     <div class="row align-items-center">
                         <div class="col">
-                            <h6 class="text-light text-uppercase ls-1 mb-1">Predict</h6>
-                            <h5 class="h3 mb-0">Result</h5>
+                            <h6 class="text-light text-uppercase ls-1 mb-1">Result</h6>
+                            <h5 class="h3 mb-0">Detail</h5>
+                        </div>
+                        <div class="col">
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <span class="row">
+                        <span class="col">Best RMSE</span>
+                        <span class="col float-right">{{ best_rmse }}</span>
+                    </span>
+                    <span class="row">
+                        <span class="col">Best R<sup>2</sup></span>
+                        <span class="col float-right">{{ best_r2 }}</span>
+                    </span>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-4">
+            <div class="card">
+                <div class="card-header">
+                    <div class="row align-items-center">
+                        <div class="col">
+                            <h6 class="text-light text-uppercase ls-1 mb-1">Result</h6>
+                            <h5 class="h3 mb-0">chart</h5>
                         </div>
                         <div class="col">
                         </div>
@@ -75,7 +109,7 @@
                 <div class="card-header bg-transparent">
                     <div class="row align-items-center">
                         <div class="col">
-                            <h6 class="text-uppercase text-muted ls-1 mb-1">Prediction</h6>
+                            <h6 class="text-uppercase text-muted ls-1 mb-1">Experiment</h6>
                             <h5 class="h3 mb-0">Result</h5>
                         </div>
                     </div>
@@ -138,12 +172,17 @@
                     showLine: false,
                 },
                 {
-                    label: 'Trend',
+                    label: '',
                     data: real_data,
                     type: 'line',
                     pointRadius: 0,
                     borderColor: 'yellow',
                     backgroundColor: 'rgba(255,255,255,0.0)',
+                    options: {
+                        legend: {
+                            display: false
+                        }
+                    }
                 }
             ]
         };
@@ -181,12 +220,17 @@
                             showLine: false,
                         },
                         {
-                            label: 'Trend',
+                            label: '',
                             data: response.real_data,
                             type: 'line',
                             pointRadius: 0,
                             borderColor: 'yellow',
                             backgroundColor: 'rgba(255,255,255,0.0)',
+                            options: {
+                                legend: {
+                                    display: false
+                                }
+                            }
                         }
                     ]
                 };

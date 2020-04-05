@@ -58,6 +58,34 @@ def index(request):
     return render(request, 'predicts/index.html', {})
 
 
+# ajax request handler
+def fs_last_result(request, fs_algorithm):
+    if request.method == 'GET':
+        prediction = Prediction.objects.filter(feature_selection=fs_algorithm).order_by('-id')[:1]
+        prediction_results = PredictionResult.objects.filter(prediction=prediction)
+
+        pred_result = []
+        the_real_data = []
+        the_data = {}
+        for prediction_data in prediction_results:
+            real_data = Dataset.objects.get(city=prediction_data.city)
+
+            each_pred_result = {"x": real_data.BPS_poverty_rate, "y": prediction_data.result}
+            each_real_data = {"x": real_data.BPS_poverty_rate, "y": real_data.BPS_poverty_rate}
+
+            pred_result.append(each_pred_result)
+            the_real_data.append(each_real_data)
+
+        the_data["prediction_results"] = pred_result
+        the_data["real_data"] = the_real_data
+
+        context = {}
+        context['success'] = True
+        context['data'] = the_data
+
+        return JsonResponse(context, content_type="application/json")
+
+
 def predictor(request):
     table_data = Prediction.objects.values_list("id",
                                                 "name",
@@ -81,13 +109,23 @@ def predictor(request):
         pass
     elif request.method == "POST":
         fs_algorithm = request.POST.get("feature_selection")
-        C = 60.0  # ntar diambil dari form
-        epsilon = 0.2  # ntar diambil dari form
+        input_C = request.POST.get("regularization") # 60.0  # ntar diambil dari form
+        input_epsilon = request.POST.get("epsilon") # 0.2  # ntar diambil dari form
+
+        C = float(input_C) if input_C != "" else 1.0
+        epsilon = float(input_epsilon) if input_epsilon != "" else 0.1
 
         dataset_data = Dataset.objects.all()
 
         best_pred, best_score, result, ten_column_predictions, y_true = \
             predict(dataset_data, fs_algorithm, C, epsilon)
+
+        print("RESULT", result, flush=True)
+        print("BEST SCORE", best_score, flush=True)
+        print("TEN COLUMNS", ten_column_predictions, flush=True)
+
+        context["best_rmse"] = round(best_score[0],8)
+        context["best_r2"] = round(best_score[1],8)
 
         data_for_input = {
             "feature_selection": fs_algorithm,
@@ -132,9 +170,6 @@ def save_to_db(data_dict):
 
 
 # ajax request handler
-# ###########################################
-# TODO
-# ###########################################
 def prediction_result(request, prediction_id):
     if request.method == 'GET':
         prediction = Prediction.objects.get(pk=prediction_id)
