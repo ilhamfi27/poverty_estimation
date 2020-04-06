@@ -1,8 +1,8 @@
 from django.http import JsonResponse
 from django.shortcuts import render, redirect
 from django.forms.models import model_to_dict
-from .models import Dataset
-from .models import City
+from .models import Dataset, City, DatasetProfile
+import numpy as np
 import pandas as pd
 
 dataset_column_names = [
@@ -40,32 +40,45 @@ DATASET VIEWS
 def new(request):
     if request.method == 'GET':
         return render(request, 'datasets/new.html', {})
-    else:
-        source_file = request.FILES['dataset_source']
-        file_extension = repr(str(source_file).split('.')[-1])
+    elif request.method == 'POST':
+        dataset_valid_date = request.POST.get("dataset_valid_date")
 
-        dataframe = pd.read_excel(source_file)
+        dataset_profile = DatasetProfile.objects.create(valid_date=dataset_valid_date)
 
-        source_data = []
-        for row in dataframe.iloc[0:, :].values:
-            row_data = []
-            for cell in row:
-                row_data.append(cell)
-            zipped_data = dict(zip(dataset_column_names, row_data))
+        if request.FILES:
+            source_file = request.FILES['dataset_source']
 
-            # make city id integer instead of float
-            zipped_data['city_id'] = int(zipped_data['city_id'])
+            file_extension = repr(str(source_file).split('.')[-1])
 
-            dataset_insert(zipped_data)
+            dataframe = pd.read_excel(source_file)
+            dataframe_data = np.nan_to_num(dataframe.iloc[0:, :].values)
+
+            source_data = []
+            for row in dataframe_data:
+                row_data = []
+                for cell in row:
+                    row_data.append(cell)
+                zipped_data = dict(zip(dataset_column_names, row_data))
+
+                # make city id integer instead of float
+                zipped_data['city_id'] = int(zipped_data['city_id'])
+                zipped_data['profile'] = dataset_profile
+
+                dataset_insert(zipped_data)
 
         return render(request, 'datasets/new.html', {})
 
 
 def list(request):
     table_header = dataset_column_names
-    table_data = Dataset.objects.all()
+    dataset_profile = DatasetProfile.objects.order_by('-valid_date')[0]
+    table_data = Dataset.objects.defer('profile').filter(profile=dataset_profile)
+
+    print(str(table_data.query), flush=True)
 
     dataset_data = [model_to_dict(data) for data in table_data]
+
+    print(dataset_data[0], flush=True)
 
     context = {
         'table_header': table_header,

@@ -11,8 +11,18 @@ class City(models.Model):
         db_table = 'cities'
 
 
+class DatasetProfile(models.Model):
+    valid_date = models.DateField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'dataset_profile'
+
+
 class Dataset(models.Model):
     city = models.ForeignKey(City, on_delete=models.CASCADE, blank=True, null=True)
+    profile = models.ForeignKey(DatasetProfile, on_delete=models.CASCADE, blank=True, null=True, default=None)
     BPS_poverty_rate = models.FloatField(default=0)
     sum_price_car = models.FloatField(default=0)
     avg_price_car = models.FloatField(default=0)

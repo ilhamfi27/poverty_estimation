@@ -40,7 +40,7 @@
                                     <tr>
                                         <td>{{ forloop.counter }}</td>
                                         {% for key, value in data.items %}
-                                        {% if key not in 'id' %}
+                                        {% if key not in 'id, profile' %}
                                         <td>{{ value }}</td>
                                         {% endif %}
                                         {% endfor %}
