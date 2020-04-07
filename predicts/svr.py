@@ -19,8 +19,8 @@ def predict(dataset_data, fs_algorithm, C=1.0, epsilon=0.1):
 
     df = pd.DataFrame(dataset_data)
     city_id = df.iloc[0:, 1].values # city id
-    raw_X = df.iloc[0:, 3:].values # dataset
-    raw_y = df.iloc[0:, 2].values # label
+    raw_X = df.iloc[0:, 4:].values # dataset
+    raw_y = df.iloc[0:, 3].values # label
 
     # 2. pre-processing
     clean_X = np.nan_to_num(raw_X)

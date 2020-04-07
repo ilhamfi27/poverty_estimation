@@ -115,9 +115,9 @@ def predictor(request):
         C = float(input_C) if input_C != "" else 1.0
         epsilon = float(input_epsilon) if input_epsilon != "" else 0.1
 
-        # dataset_profile = DatasetProfile.objects.order_by('-valid_date')[0]
-        # table_data = Dataset.objects.defer('profile').filter(profile=dataset_profile)
-        dataset_data = Dataset.objects.all()
+        dataset_profile = DatasetProfile.objects.order_by('-valid_date')[0]
+        dataset_data = Dataset.objects.defer('profile').filter(profile=dataset_profile)
+        # dataset_data = Dataset.objects.all()
 
         best_pred, best_score, result, ten_column_predictions, y_true = \
             predict(dataset_data, fs_algorithm, C, epsilon)

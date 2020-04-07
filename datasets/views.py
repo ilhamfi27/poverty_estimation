@@ -72,9 +72,7 @@ def new(request):
 def list(request):
     table_header = dataset_column_names
     dataset_profile = DatasetProfile.objects.order_by('-valid_date')[0]
-    table_data = Dataset.objects.defer('profile').filter(profile=dataset_profile)
-
-    print(str(table_data.query), flush=True)
+    table_data = Dataset.objects.filter(profile=dataset_profile)
 
     dataset_data = [model_to_dict(data) for data in table_data]
 
