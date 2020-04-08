@@ -13,6 +13,9 @@ class Prediction(models.Model):
     epsilon = models.FloatField(default=1.0)
     accuracy_value = models.FloatField(default=0.0)
     error_value = models.FloatField(default=0.0)
+    ranked_index = models.TextField(default="")
+    feature_num = models.IntegerField(default=0)
+    dumped_model = models.CharField(max_length=255, default="")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

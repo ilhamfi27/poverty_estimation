@@ -1,5 +1,7 @@
 import pandas as pd
 import numpy as np
+import pickle
+from datetime import datetime
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.svm import SVR
 from sklearn.metrics import r2_score
@@ -51,6 +53,15 @@ def predict(dataset_data, fs_algorithm, C=1.0, epsilon=0.1):
     best_pred, best_score, result, ten_column_predictions \
         = trainf(best_sort_feature, y, C, epsilon)
 
+    now_unix_timestamp = str(datetime.utcnow().timestamp())
+    time = now_unix_timestamp.split(".")[0]
+
+    # set filename
+    filename = "dumped_model/svr_"+ fs_algorithm + "_" + time +"_.sav"
+
+    # get regressor
+    regressor = best_score[3]
+    pickle.dump(regressor, open(filename, 'wb'))
 
     """
     RETURN VALUES
@@ -64,7 +75,21 @@ def predict(dataset_data, fs_algorithm, C=1.0, epsilon=0.1):
     best_score.append(ranked_index[:best_score[2]])
 
     y_true = y
-    return best_pred, best_score, result, ten_column_predictions, y_true
+
+    """
+    1. best prediction => hasil prediksi poverty rate (array)
+    2. detail => detail best score (array)
+        .best_score => r2
+        .lowest_score => rmse
+        .jumlah fitur dengan terbaik
+        .model terbaik
+    3. result => detail hasil r2 dari 10 fitur hingga 96 fitur (array)
+        -> [fitur, r2, rmse]
+    4. hasil percobaan prediksi per 10 fitur (array)
+    5. actual poverty rate
+    6. filename
+    """
+    return best_pred, best_score, result, ten_column_predictions, y_true, filename
 
 
 def trainf(X, y, C=1.0, epsilon=0.1):
@@ -117,5 +142,18 @@ def trainf(X, y, C=1.0, epsilon=0.1):
             best_score = accuracy_score
             lowest_error = rmse_score
             best_feature_num = repeat
+            best_regressor = regressor
 
-    return best_pred, [best_score, lowest_error, best_feature_num], result, ten_column_predictions
+    """
+    1. best prediction => hasil prediksi poverty rate (array)
+    2. detail => detail best score (array)
+        .best_score => r2
+        .lowest_score => rmse
+        .jumlah fitur dengan terbaik
+        .model terbaik
+    3. result => detail hasil r2 dari 10 fitur hingga 96 fitur (array)
+        -> [fitur, r2, rmse]
+    4. hasil percobaan prediksi per 10 fitur (array)
+    """
+
+    return best_pred, [best_score, lowest_error, best_feature_num, best_regressor], result, ten_column_predictions

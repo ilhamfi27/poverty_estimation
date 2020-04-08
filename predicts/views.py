@@ -3,6 +3,7 @@ from django.shortcuts import render, redirect
 from datasets.models import Dataset, City, DatasetProfile
 from .models import Prediction, PredictionResult
 from .svr import *
+import os
 import json
 
 dataset_column_names = [
@@ -119,15 +120,15 @@ def predictor(request):
         dataset_data = Dataset.objects.defer('profile').filter(profile=dataset_profile)
         # dataset_data = Dataset.objects.all()
 
-        best_pred, best_score, result, ten_column_predictions, y_true = \
+        best_pred, best_score, result, ten_column_predictions, y_true, filename = \
             predict(dataset_data, fs_algorithm, C, epsilon)
 
-        # print("RESULT", result, flush=True)
-        print("BEST SCORE", best_score, flush=True)
-        # print("TEN COLUMNS", ten_column_predictions, flush=True)
+        # get full file path
+        SITE_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        full_model_file_path = SITE_ROOT+"/"+filename
 
-        context["best_rmse"] = round(best_score[0],8)
-        context["best_r2"] = round(best_score[1],8)
+        ranked_index = [str(i) for i in best_score[4]]
+        ranked_index = ",".join(ranked_index)
 
         data_for_input = {
             "feature_selection": fs_algorithm,
@@ -136,9 +137,12 @@ def predictor(request):
             "accuracy_value": best_score[0],
             "error_value": best_score[1],
             "pred_result": best_pred,
+            "feature_num": best_score[2],
+            "ranked_index": ranked_index,
+            "dumped_model": full_model_file_path,
         }
 
-        # save_to_db(data_for_input)
+        save_to_db(data_for_input)
 
         pred_result = []
         real_data = []
@@ -147,6 +151,8 @@ def predictor(request):
             each_real_data = {"x": y_true[i], "y": y_true[i]}
             pred_result.append(each_pred_result)
             real_data.append(each_real_data)
+        context["best_rmse"] = round(best_score[0], 8)
+        context["best_r2"] = round(best_score[1], 8)
         context["pred_result"] = json.dumps(pred_result)
         context["real_data"] = json.dumps(real_data)
     return render(request, 'predicts/predictor.html', context=context)
