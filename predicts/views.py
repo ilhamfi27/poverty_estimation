@@ -122,9 +122,9 @@ def predictor(request):
         best_pred, best_score, result, ten_column_predictions, y_true = \
             predict(dataset_data, fs_algorithm, C, epsilon)
 
-        print("RESULT", result, flush=True)
+        # print("RESULT", result, flush=True)
         print("BEST SCORE", best_score, flush=True)
-        print("TEN COLUMNS", ten_column_predictions, flush=True)
+        # print("TEN COLUMNS", ten_column_predictions, flush=True)
 
         context["best_rmse"] = round(best_score[0],8)
         context["best_r2"] = round(best_score[1],8)
@@ -138,7 +138,7 @@ def predictor(request):
             "pred_result": best_pred,
         }
 
-        save_to_db(data_for_input)
+        # save_to_db(data_for_input)
 
         pred_result = []
         real_data = []

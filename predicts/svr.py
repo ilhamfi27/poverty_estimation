@@ -60,6 +60,9 @@ def predict(dataset_data, fs_algorithm, C=1.0, epsilon=0.1):
     # modified best prediction return value
     best_pred = dict(zip(city_id, best_pred))
 
+    # nambahin list ranked index dari pecahan 10 terbaik
+    best_score.append(ranked_index[:best_score[2]])
+
     y_true = y
     return best_pred, best_score, result, ten_column_predictions, y_true
 
@@ -113,5 +116,6 @@ def trainf(X, y, C=1.0, epsilon=0.1):
             best_pred = y_pred
             best_score = accuracy_score
             lowest_error = rmse_score
+            best_feature_num = repeat
 
-    return best_pred, [best_score, lowest_error], result, ten_column_predictions
+    return best_pred, [best_score, lowest_error, best_feature_num], result, ten_column_predictions
