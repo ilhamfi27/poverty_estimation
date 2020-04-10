@@ -24,6 +24,8 @@
                     </div>
                 </div>
                 <div class="card-body">
+                    <h2>Dataset Information</h2>
+                    <p>Dataset Valid Date {{ dataset_profile.valid_date }}</p>
                     <div class="table-responsive">
                         <div>
                             <table class="table align-items-center" id="js-dataset-table">
@@ -44,6 +46,40 @@
                                         <td>{{ value }}</td>
                                         {% endif %}
                                         {% endfor %}
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-header bg-transparent">
+                    <div class="row align-items-center">
+                        <div class="col">
+                            <h6 class="text-uppercase text-muted ls-1 mb-1">Dataset</h6>
+                            <h5 class="h3 mb-0">History</h5>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <div>
+                            <table class="table align-items-center" id="js-dataset-table">
+                                <thead class="thead-light">
+                                    <tr>
+                                        <th scope="col">No</th>
+                                        <th scope="col">Valid Date</th>
+                                        <th scope="col">Uploaded Date</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="list">
+                                    {% for data in dataset_profiles %}
+                                    <tr>
+                                        <td>{{ forloop.counter }}</td>
+                                        <td>{{ data.valid_date }}</td>
+                                        <td>{{ data.created_at }}</td>
                                     </tr>
                                     {% endfor %}
                                 </tbody>

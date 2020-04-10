@@ -3,8 +3,11 @@ from django.shortcuts import render, redirect
 from datasets.models import Dataset, City, DatasetProfile
 from .models import Prediction, PredictionResult
 from .svr import *
+import matplotlib.pyplot as plt
 import os
 import json
+import io
+import urllib, base64
 
 dataset_column_names = [
     'city_id', 'BPS_poverty_rate', 'sum_price_car', 'avg_price_car', 'std_price_car', 'sum_sold_car',
@@ -56,6 +59,10 @@ PREDICTOR VIEWS
 
 
 def index(request):
+    if request.method == 'GET':
+        print("HAI", flush=True)
+
+
     return render(request, 'predicts/index.html', {})
 
 
@@ -142,7 +149,11 @@ def predictor(request):
             "dumped_model": full_model_file_path,
         }
 
-        save_to_db(data_for_input)
+        # save_to_db(data_for_input)
+
+        y_pred, y_true = list(best_pred.values()), y_true
+
+        uri = draw_figure(y_pred, y_true)
 
         pred_result = []
         real_data = []
@@ -155,7 +166,30 @@ def predictor(request):
         context["best_r2"] = round(best_score[1], 8)
         context["pred_result"] = json.dumps(pred_result)
         context["real_data"] = json.dumps(real_data)
+        context["figure"] = uri
     return render(request, 'predicts/predictor.html', context=context)
+
+
+def draw_figure(y_pred, y_true):
+    for i, x in enumerate(y_pred):
+        if abs(y_true[i] - x) > 1.5:
+            plt.scatter(y_true[i], x, c="r", s=15)
+        else:
+            plt.scatter(y_true[i], x, c="b", s=15)
+    plt.plot(y_true, y_true)
+    plt.plot(y_true - 1.5, y_true, c="y", linewidth="0.5")
+    plt.plot(y_true + 1.5, y_true, c="y", linewidth="0.5")
+    plt.xlabel("Actual Data")
+    plt.ylabel("Prediction Data")
+
+    fig = plt.gcf()
+    buf = io.BytesIO()
+    fig.savefig(buf, format="png")
+    buf.seek(0)
+    string = base64.b64encode(buf.read())
+    uri = urllib.parse.quote(string)
+
+    return uri
 
 
 def save_to_db(data_dict):

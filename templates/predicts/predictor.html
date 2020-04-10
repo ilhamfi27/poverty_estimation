@@ -93,12 +93,7 @@
                     </div>
                 </div>
                 <div class="card-body">
-                    <!-- Chart -->
-                    <div class="chart">
-                        <!-- Chart wrapper -->
-                        <canvas id="chart-pred" data-pred-result="{{ pred_result }}"
-                            data-pred-true="{{ real_data }}"></canvas>
-                    </div>
+                    <img src="data:image/png;base64,{{ figure|safe }}" alt="" class="img-fluid">
                 </div>
             </div>
         </div>
