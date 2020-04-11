@@ -77,7 +77,7 @@ def predict(dataset_data, fs_algorithm, C=1.0, epsilon=0.1):
     y_true = y
 
     """
-    1. best prediction => hasil prediksi poverty rate (array)
+    1. best prediction => hasil prediksi poverty rate (dictionary, key => city_id)
     2. detail => detail best score (array)
         .best_score => r2
         .lowest_score => rmse
@@ -157,3 +157,38 @@ def trainf(X, y, C=1.0, epsilon=0.1):
     """
 
     return best_pred, [best_score, lowest_error, best_feature_num, best_regressor], result, ten_column_predictions
+
+
+def load_model(dataset_data, features, url=""):
+    sc = MinMaxScaler(feature_range=(0,10))
+    dataset_data = [model_to_dict(data) for data in dataset_data]
+
+    print("NEW FEATURE NUM", len(features), flush=True)
+    print("NEW FEATURE INDEXES", features, flush=True)
+
+    sorted_feature = []
+
+    df = pd.DataFrame(dataset_data)
+    raw_X = df.iloc[0:, 4:].values # dataset
+    raw_y = df.iloc[0:, 3].values # label
+
+    # 2. pre-processing
+    clean_X = np.nan_to_num(raw_X)
+    clean_y = np.nan_to_num(raw_y)
+
+    # 3. normalization
+    sc.fit(raw_X)
+    X = np.array(sc.transform(clean_X))
+    y = np.array(clean_y)
+
+    for row in X:
+        row_array = []
+        for num, feature_idx in enumerate(features):
+            row_array.append(row[feature_idx])
+        sorted_feature.append(row_array)
+
+    # load the model from disk
+    loaded_model = pickle.load(open(url, 'rb'))
+    result = loaded_model.predict(sorted_feature)
+
+    return result, y

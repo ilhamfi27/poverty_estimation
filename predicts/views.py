@@ -2,7 +2,7 @@ from django.http import JsonResponse
 from django.shortcuts import render, redirect
 from datasets.models import Dataset, City, DatasetProfile
 from .models import Prediction, PredictionResult
-from .svr import *
+import predicts.svr as svr
 import matplotlib.pyplot as plt
 import os
 import json
@@ -58,23 +58,63 @@ PREDICTOR VIEWS
 """
 
 
+class Conversion():
+    def to_list(self, the_string):
+        strings = the_string.split(",")
+        return [int(i) for i in strings]
+
+
 def index(request):
+    prediction = Prediction.objects.all()
     if request.method == 'GET':
-        print("HAI", flush=True)
+        # get model for each feature selection
+        best_f_score = prediction.filter(feature_selection="f_score").order_by('-accuracy_value').first()
+        best_chi_square = prediction.filter(feature_selection="chi_square").order_by('-accuracy_value').first()
+        best_cfs = prediction.filter(feature_selection="cfs").order_by('-accuracy_value').first()
+
+        # get dataset
+        dataset_profile = DatasetProfile.objects.order_by('-valid_date').first()
+        dataset_data = Dataset.objects.defer('profile').filter(profile=dataset_profile)
+
+        f_score_result, f_score_true = get_results(dataset_data, best_f_score)
+        chi_square_result, chi_square_true = get_results(dataset_data, best_chi_square)
+        cfs_result, cfs_true = get_results(dataset_data, best_cfs)
+
+        context = {}
+
+        f_score_plot = draw_figure(f_score_result, f_score_true)
+        chi_square_plot = draw_figure(chi_square_result, chi_square_true)
+        cfs_plot = draw_figure(cfs_result, cfs_true)
+
+        context["f_score_plot"] = f_score_plot
+        context["chi_square_plot"] = chi_square_plot
+        context["cfs_plot"] = cfs_plot
+
+    return render(request, 'predicts/index.html', context=context)
 
 
-    return render(request, 'predicts/index.html', {})
+def get_results(dataset_data, pred_instance):
+    if pred_instance == None:
+        return [], []
+
+    result, y_true = svr.load_model(dataset_data, Conversion.to_list(Conversion, pred_instance.ranked_index),
+                                    url=pred_instance.dumped_model)
+    return result, y_true
 
 
 # ajax request handler
 def fs_last_result(request, fs_algorithm):
     if request.method == 'GET':
-        prediction = Prediction.objects.filter(feature_selection=fs_algorithm).order_by('-id')[:1]
+        prediction = Prediction.objects.filter(feature_selection=fs_algorithm).order_by('-accuracy_value').first()
         prediction_results = PredictionResult.objects.filter(prediction=prediction)
 
         pred_result = []
         the_real_data = []
         the_data = {}
+
+        # print("OLD FEATURE NUM", prediction, flush=True)
+        # print("OLD FEATURE INDEXES", prediction.ranked_index, flush=True)
+
         for prediction_data in prediction_results:
             real_data = Dataset.objects.get(city=prediction_data.city)
 
@@ -117,22 +157,21 @@ def predictor(request):
         pass
     elif request.method == "POST":
         fs_algorithm = request.POST.get("feature_selection")
-        input_C = request.POST.get("regularization") # 60.0  # ntar diambil dari form
-        input_epsilon = request.POST.get("epsilon") # 0.2  # ntar diambil dari form
+        input_C = request.POST.get("regularization")  # 60.0  # ntar diambil dari form
+        input_epsilon = request.POST.get("epsilon")  # 0.2  # ntar diambil dari form
 
         C = float(input_C) if input_C != "" else 1.0
         epsilon = float(input_epsilon) if input_epsilon != "" else 0.1
 
-        dataset_profile = DatasetProfile.objects.order_by('-valid_date')[0]
+        dataset_profile = DatasetProfile.objects.order_by('-valid_date').first()
         dataset_data = Dataset.objects.defer('profile').filter(profile=dataset_profile)
-        # dataset_data = Dataset.objects.all()
 
         best_pred, best_score, result, ten_column_predictions, y_true, filename = \
-            predict(dataset_data, fs_algorithm, C, epsilon)
+            svr.predict(dataset_data, fs_algorithm, C, epsilon)
 
         # get full file path
         SITE_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-        full_model_file_path = SITE_ROOT+"/"+filename
+        full_model_file_path = SITE_ROOT + "/" + filename
 
         ranked_index = [str(i) for i in best_score[4]]
         ranked_index = ",".join(ranked_index)
@@ -149,7 +188,7 @@ def predictor(request):
             "dumped_model": full_model_file_path,
         }
 
-        # save_to_db(data_for_input)
+        save_to_db(data_for_input)
 
         y_pred, y_true = list(best_pred.values()), y_true
 
@@ -171,6 +210,9 @@ def predictor(request):
 
 
 def draw_figure(y_pred, y_true):
+    if len(y_true) < 1:
+        return None
+
     for i, x in enumerate(y_pred):
         if abs(y_true[i] - x) > 1.5:
             plt.scatter(y_true[i], x, c="r", s=15)

@@ -18,11 +18,7 @@
                     </div>
                 </div>
                 <div class="card-body">
-                    <!-- Chart -->
-                    <div class="chart">
-                        <!-- Chart wrapper -->
-                        <canvas id="f-score-chart"></canvas>
-                    </div>
+                    <img src="data:image/png;base64,{{ f_score_plot|safe }}" alt="" class="img-fluid">
                 </div>
             </div>
         </div>
@@ -39,11 +35,7 @@
                     </div>
                 </div>
                 <div class="card-body">
-                    <!-- Chart -->
-                    <div class="chart">
-                        <!-- Chart wrapper -->
-                        <canvas id="chi-square-chart"></canvas>
-                    </div>
+                    <img src="data:image/png;base64,{{ chi_square_plot|safe }}" alt="" class="img-fluid">
                 </div>
             </div>
         </div>
@@ -60,11 +52,7 @@
                     </div>
                 </div>
                 <div class="card-body">
-                    <!-- Chart -->
-                    <div class="chart">
-                        <!-- Chart wrapper -->
-                        <canvas id="cfs-chart"></canvas>
-                    </div>
+                    <img src="data:image/png;base64,{{ cfs_plot|safe }}" alt="" class="img-fluid">
                 </div>
             </div>
         </div>
@@ -76,9 +64,9 @@
 {% block footer_js %}
 <script>
     $(document).ready(function () {
-        chart_data("f_score", "F-Score", $("#f-score-chart"));
-        chart_data("chi_square", "Chi-Square", $("#chi-square-chart"));
-        chart_data("cfs", "CFS", $("#cfs-chart"));
+        // chart_data("f_score", "F-Score", $("#f-score-chart"));
+        // chart_data("chi_square", "Chi-Square", $("#chi-square-chart"));
+        // chart_data("cfs", "CFS", $("#cfs-chart"));
     });
 
     function chart_data(fs_algorithm, title, chart) {
