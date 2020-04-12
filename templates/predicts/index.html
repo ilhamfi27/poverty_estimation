@@ -195,7 +195,7 @@
             <p>Poverty Rate (%): ${res.poverty_rate}</p>
             `;
 
-            myMarker.bindPopup(content).openPopup();
+            myMarker.bindPopup(content);
 
             myMarker.on('mouseover', function (e) {
                 // let content = `
