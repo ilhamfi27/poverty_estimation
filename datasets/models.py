@@ -2,8 +2,8 @@ from django.db import models
 
 class City(models.Model):
     name = models.CharField(max_length=50)
-    latitude = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
-    longitude = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
+    latitude = models.DecimalField(max_digits=10, decimal_places=7, blank=True, null=True)
+    longitude = models.DecimalField(max_digits=10, decimal_places=7, blank=True, null=True)
     province = models.CharField(max_length=40, default="")
     deleted = models.BooleanField(default=False)
 

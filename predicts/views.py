@@ -8,6 +8,7 @@ import os
 import json
 import io
 import urllib, base64
+import numpy as np
 
 dataset_column_names = [
     'city_id', 'BPS_poverty_rate', 'sum_price_car', 'avg_price_car', 'std_price_car', 'sum_sold_car',
@@ -65,30 +66,22 @@ class Conversion():
 
 
 def index(request):
-    prediction = Prediction.objects.all()
+    # get dataset
+    dataset_profile = DatasetProfile.objects.order_by('-valid_date').first()
+    dataset_data = Dataset.objects.filter(profile=dataset_profile)
+    bps_poverty_rate = dataset_data.values_list('BPS_poverty_rate')
+
     if request.method == 'GET':
-        # get model for each feature selection
-        best_f_score = prediction.filter(feature_selection="f_score").order_by('-accuracy_value').first()
-        best_chi_square = prediction.filter(feature_selection="chi_square").order_by('-accuracy_value').first()
-        best_cfs = prediction.filter(feature_selection="cfs").order_by('-accuracy_value').first()
+        best_prediction = Prediction.objects.order_by('-accuracy_value').first()
+        best_result, city_result = get_results(dataset_data, best_prediction)
+        list_bps_poverty_rate = [i[0] for i in bps_poverty_rate]
 
-        # get dataset
-        dataset_profile = DatasetProfile.objects.order_by('-valid_date').first()
-        dataset_data = Dataset.objects.defer('profile').filter(profile=dataset_profile)
-
-        f_score_result, f_score_true = get_results(dataset_data, best_f_score)
-        chi_square_result, chi_square_true = get_results(dataset_data, best_chi_square)
-        cfs_result, cfs_true = get_results(dataset_data, best_cfs)
+        prediction_result = PredictionResult.objects.filter(prediction=best_prediction)
 
         context = {}
+        context['best_plot'] = draw_figure(best_result, list_bps_poverty_rate)
+        context['prediction_result'] = prediction_result
 
-        f_score_plot = draw_figure(f_score_result, f_score_true)
-        chi_square_plot = draw_figure(chi_square_result, chi_square_true)
-        cfs_plot = draw_figure(cfs_result, cfs_true)
-
-        context["f_score_plot"] = f_score_plot
-        context["chi_square_plot"] = chi_square_plot
-        context["cfs_plot"] = cfs_plot
 
     return render(request, 'predicts/index.html', context=context)
 
@@ -97,39 +90,33 @@ def get_results(dataset_data, pred_instance):
     if pred_instance == None:
         return [], []
 
-    result, y_true = svr.load_model(dataset_data, Conversion.to_list(Conversion, pred_instance.ranked_index),
+    result = svr.load_model(dataset_data, Conversion.to_list(Conversion, pred_instance.ranked_index),
                                     url=pred_instance.dumped_model)
-    return result, y_true
+    return result
 
 
 # ajax request handler
-def fs_last_result(request, fs_algorithm):
+def mapping_result(request):
     if request.method == 'GET':
-        prediction = Prediction.objects.filter(feature_selection=fs_algorithm).order_by('-accuracy_value').first()
-        prediction_results = PredictionResult.objects.filter(prediction=prediction)
+        # get dataset
+        best_prediction = Prediction.objects.order_by('-accuracy_value').first()
+        prediction_result = PredictionResult.objects.filter(prediction=best_prediction)
 
-        pred_result = []
-        the_real_data = []
-        the_data = {}
 
-        # print("OLD FEATURE NUM", prediction, flush=True)
-        # print("OLD FEATURE INDEXES", prediction.ranked_index, flush=True)
+        response = []
+        for result in prediction_result:
+            data = {}
+            data['city_id'] = result.city.id
+            data['city_name'] = result.city.name
+            data['latitude'] = result.city.latitude
+            data['longitude'] = result.city.longitude
+            data['poverty_rate'] = result.result
 
-        for prediction_data in prediction_results:
-            real_data = Dataset.objects.get(city=prediction_data.city)
-
-            each_pred_result = {"x": real_data.BPS_poverty_rate, "y": prediction_data.result}
-            each_real_data = {"x": real_data.BPS_poverty_rate, "y": real_data.BPS_poverty_rate}
-
-            pred_result.append(each_pred_result)
-            the_real_data.append(each_real_data)
-
-        the_data["prediction_results"] = pred_result
-        the_data["real_data"] = the_real_data
+            response.append(data)
 
         context = {}
         context['success'] = True
-        context['data'] = the_data
+        context['data'] = response
 
         return JsonResponse(context, content_type="application/json")
 
@@ -209,18 +196,20 @@ def predictor(request):
     return render(request, 'predicts/predictor.html', context=context)
 
 
-def draw_figure(y_pred, y_true):
-    if len(y_true) < 1:
+def draw_figure(predicted, real):
+    print(type(predicted), type(real), flush=True)
+    if len(real) < 1:
         return None
 
-    for i, x in enumerate(y_pred):
-        if abs(y_true[i] - x) > 1.5:
-            plt.scatter(y_true[i], x, c="r", s=15)
+    real = np.array(real)
+    for i, x in enumerate(predicted):
+        if abs(real[i] - x) > 1.5:
+            plt.scatter(real[i], x, c="r", s=15)
         else:
-            plt.scatter(y_true[i], x, c="b", s=15)
-    plt.plot(y_true, y_true)
-    plt.plot(y_true - 1.5, y_true, c="y", linewidth="0.5")
-    plt.plot(y_true + 1.5, y_true, c="y", linewidth="0.5")
+            plt.scatter(real[i], x, c="b", s=15)
+    plt.plot(real, real, c="b")
+    plt.plot(real - 1.5, real, c="y", linewidth="0.5")
+    plt.plot(real + 1.5, real, c="y", linewidth="0.5")
     plt.xlabel("Actual Data")
     plt.ylabel("Prediction Data")
 

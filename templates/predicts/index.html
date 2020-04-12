@@ -1,10 +1,96 @@
 {% extends "base.html" %}
+{% load static %}
+
+{% block head_css %}
+<link rel="stylesheet" href="{% static 'leaflet/leaflet.css' %}" type="text/css">
+<script src="{% static 'leaflet/leaflet.js' %}"></script>
+<style>
+    #java-island {
+        height: 350px;
+    }
+</style>
+{% endblock %}
 
 {% block page_content %}
 {% load static %}
 <!-- Page content -->
 <div class="container-fluid mt--6">
     <div class="row">
+        <div class="col-xl">
+            <div class="card">
+                <div class="card-header bg-transparent">
+                    <div class="row align-items-center">
+                        <div class="col">
+                            <h6 class="text-uppercase text-muted ls-1 mb-1">Javanese Island Poverty Mapping</h6>
+                            <h5 class="h3 mb-0"></h5>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div id="java-island"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-xl-7">
+            <div class="card">
+                <div class="card-header">
+                    <div class="row align-items-center">
+                        <div class="col">
+                            <h6 class="text-light text-uppercase ls-1 mb-1">Cities Poverty Rate</h6>
+                            <h5 class="h3 mb-0"></h5>
+                        </div>
+                        <div class="col">
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive table-hover point_row_table">
+                        <div>
+                            <table class="table align-items-center" id="js-poverty-result">
+                                <thead class="thead-light">
+                                    <tr>
+                                        <th scope="col">No</th>
+                                        <th scope="col">City</th>
+                                        <th scope="col">Poverty Rate</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="list">
+                                    {% for data in prediction_result %}
+                                    <tr>
+                                        <td scope="col">{{ forloop.counter }}</td>
+                                        <td scope="col">{{ data.city.name }}</td>
+                                        <td scope="col">{{ data.result }}</td>
+
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-5">
+            <div class="card">
+                <div class="card-header">
+                    <div class="row align-items-center">
+                        <div class="col">
+                            <h6 class="text-light text-uppercase ls-1 mb-1">Predicted</h6>
+                            <h5 class="h3 mb-0"></h5>
+                        </div>
+                        <div class="col">
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <img src="data:image/png;base64,{{ best_plot|safe }}" alt="" class="img-fluid">
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- <div class="row">
         <div class="col-xl-4">
             <div class="card">
                 <div class="card-header">
@@ -56,90 +142,74 @@
                 </div>
             </div>
         </div>
-    </div>
+    </div> -->
     {% include 'footer.html' %}
 </div>
 {% endblock %}
 
 {% block footer_js %}
+<script src="{% static 'admin_argon/assets/vendor/datatables.net/js/jquery.dataTables.min.js' %}"></script>
+<script src="{% static 'admin_argon/assets/vendor/datatables.net-bs4/js/dataTables.bootstrap4.min.js' %}"></script>
 <script>
     $(document).ready(function () {
-        // chart_data("f_score", "F-Score", $("#f-score-chart"));
-        // chart_data("chi_square", "Chi-Square", $("#chi-square-chart"));
-        // chart_data("cfs", "CFS", $("#cfs-chart"));
+        var mymap = L.map('java-island').setView([-7.166, 109.852], 7);
+        mapLayer(mymap);
+        mapMarkers(mymap);
+        dataTableInit();
     });
-
-    function chart_data(fs_algorithm, title, chart) {
-        $.ajax({
-            url: `/predicts/api/fs_last_result/${fs_algorithm}/`,
-            method: 'GET',
-            success: function (res) {
-                const response = res.data;
-                var chartData = {
-                    datasets: [{
-                            label: `${title} Result`,
-                            borderColor: 'red',
-                            backgroundColor: 'rgba(255,0,0,0.5)',
-                            data: response.prediction_results,
-                            showLine: false,
-                        },
-                        {
-                            label: 'Trend',
-                            data: response.real_data,
-                            type: 'line',
-                            pointRadius: 0,
-                            borderColor: 'yellow',
-                            backgroundColor: 'rgba(255,255,255,0.0)',
-                        }
-                    ]
-                };
-                drawChart(chartData, title, chart);
-            }
+    function dataTableInit(params) {
+        $('#js-poverty-result').dataTable({
+            'pageLength': 5,
         });
     }
-
-    function drawChart(dataset, title, chart) {
-        var scatterChart = new Chart(chart, {
-            type: 'scatter',
-            data: dataset,
-            options: {
-                title: {
-                    display: true,
-                    text: `${title} Result`,
-                },
-                responsive: true, // Instruct chart js to respond nicely.
-                maintainAspectRatio: false, // Add to prevent default behaviour of full-width/height 
-            }
-        });
+    function mapLayer(mymap) {
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(mymap);
     }
-
-    function getPredictionId(id) {
+    function mapMarkers(mymap) {
         $.ajax({
-            url: `/predicts/prediction_result/${id}/`,
+            url: '/predicts/api/mapping_result/',
             method: 'GET',
             success: function (res) {
-                let response = res.data;
-                console.log(response);
-                var scatterChartData = {
-                    datasets: [{
-                            label: 'Prediction Result',
-                            borderColor: 'red',
-                            backgroundColor: 'rgba(255,0,0,0.5)',
-                            data: response.prediction_results,
-                            showLine: false,
-                        },
-                        {
-                            label: 'Trend',
-                            data: response.real_data,
-                            type: 'line',
-                            pointRadius: 0,
-                            borderColor: 'yellow',
-                            backgroundColor: 'rgba(255,255,255,0.0)',
-                        }
-                    ]
-                };
-                drawChart(scatterChartData);
-            }
+                setMarkers(res.data, mymap)
+            },
+        });
+    }
+    function setMarkers(response, mymap) {
+        response.forEach(res => {
+            let myMarker = L.marker([res.latitude, res.longitude]);
+            let icon = myMarker.options.icon;
+            icon.options.iconSize = [12, 20];
+            icon.options.iconAnchor = [6, 20];
+            icon.options.popupAnchor = [1, -34]
+            icon.options.tooltipAnchor = [16, -28]
+            icon.options.shadowSize = [20, 20]
+
+            myMarker.setIcon(icon);
+            myMarker.addTo(mymap);
+
+            
+            let content = `
+            <p>City Name: ${res.city_name}</p>
+            <p>Poverty Rate (%): ${res.poverty_rate}</p>
+            `;
+
+            myMarker.bindPopup(content).openPopup();
+
+            myMarker.on('mouseover', function (e) {
+                // let content = `
+                // <p>City Name: ${res.city_name}</p>
+                // <p>Poverty Rate (%): ${res.poverty_rate}</p>
+                // `;
+                // var popup = L.popup()
+                //     .setLatLng(e.latlng) 
+                //     .setContent(content)
+                //     .openOn(mymap);
+            });
+            myMarker.on('mouseout', function (e) {
+
+            });
         });
     }
 </script>
