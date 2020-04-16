@@ -3,235 +3,365 @@
 
 {% block head_css %}
 <link rel="stylesheet" href="{% static 'select2/select2.min.css' %}" type="text/css">
+<link rel="stylesheet" href="{% static 'multistep-form/multistep.css' %}" type="text/css">
 {% endblock %}
 
 {% block page_content %}
 <!-- Page content -->
 <div class="container-fluid mt--6">
-    <div class="row">
-        <div class="col-xl-4">
-            <div class="card">
-                <div class="card-header bg-transparent">
-                    <div class="row align-items-center">
-                        <div class="col">
-                            <h6 class="text-uppercase text-muted ls-1 mb-1">Customize</h6>
-                            <h5 class="h3 mb-0">Experiment</h5>
-                        </div>
-                    </div>
-                </div>
-                <div class="card-body">
-                    <form action="/predicts/predictor/" method="POST">
-                        {% csrf_token %}
-                        <div class="form-group">
-                            <label for="dataset-source" class="form-control-label">Feature Selection Algorithm</label>
-                            <div class="custom-control custom-radio mb-3">
-                                <input type="radio" id="f_score-radio" name="feature_selection" value="f_score"
-                                    class="custom-control-input" required>
-                                <label class="custom-control-label" for="f_score-radio">F-Score</label>
-                            </div>
-                            <div class="custom-control custom-radio mb-3">
-                                <input type="radio" id="chi_square-radio" name="feature_selection" value="chi_square"
-                                    class="custom-control-input" required>
-                                <label class="custom-control-label" for="chi_square-radio">Chi-square</label>
-                            </div>
-                            <div class="custom-control custom-radio">
-                                <input type="radio" id="cfs-radio" name="feature_selection" value="cfs"
-                                    class="custom-control-input" required>
-                                <label class="custom-control-label" for="cfs-radio">Correlation-based Feature
-                                    Selection</label>
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <label for="regularization-input" class="form-control-label">Regularization (C)</label>
-                            <input type="number" class="form-control" id="regularization-input" name="regularization"
-                                placeholder="Regularization (default 1.0)" step=".01">
-                        </div>
-                        <div class="form-group">
-                            <label for="epsilon-input" class="form-control-label">Epsilon</label>
-                            <input type="number" class="form-control" id="epsilon-input" name="epsilon"
-                                placeholder="Epsilon (default 1.0)" step=".01">
-                        </div>
-                        <button type="submit" class="btn btn-primary float-right">Submit</button>
-                    </form>
-                </div>
+  <div class="row">
+    <div class="col-xl">
+      <div class="card">
+        <div class="card-header bg-transparent">
+          <div class="row align-items-center">
+            <div class="col">
+              <h6 class="text-uppercase text-muted ls-1 mb-1">SVR Predict</h6>
+              <h5 class="h3 mb-0"></h5>
             </div>
+          </div>
         </div>
-        <div class="col-xl-4">
-            <div class="card">
-                <div class="card-header">
-                    <div class="row align-items-center">
-                        <div class="col">
-                            <h6 class="text-light text-uppercase ls-1 mb-1">Result</h6>
-                            <h5 class="h3 mb-0">Detail</h5>
-                        </div>
-                        <div class="col">
-                        </div>
-                    </div>
+        <div class="card-body">
+
+          <div class="multisteps-form">
+            <!--progress bar-->
+            <div class="row">
+              <div class="col-12 col-lg-8 ml-auto mr-auto mb-4">
+                <div class="multisteps-form__progress">
+                  <button class="multisteps-form__progress-btn js-active" type="button" title="Choose">Choose
+                  </button>
+                  <button class="multisteps-form__progress-btn" type="button" title="Address">ML Model</button>
+                  <button class="multisteps-form__progress-btn" type="button" title="Order Info">Predict</button>
                 </div>
-                <div class="card-body">
-                    <span class="row">
-                        <span class="col">Best RMSE</span>
-                        <span class="col float-right">{{ best_rmse }}</span>
-                    </span>
-                    <span class="row">
-                        <span class="col">Best R<sup>2</sup></span>
-                        <span class="col float-right">{{ best_r2 }}</span>
-                    </span>
-                </div>
+              </div>
             </div>
-        </div>
-        <div class="col-xl-4">
-            <div class="card">
-                <div class="card-header">
-                    <div class="row align-items-center">
-                        <div class="col">
-                            <h6 class="text-light text-uppercase ls-1 mb-1">Result</h6>
-                            <h5 class="h3 mb-0">chart</h5>
+            <!--form panels-->
+            <div class="row">
+              <div class="col-12 col-lg-8 m-auto">
+                <form class="multisteps-form__form">
+                  <!--single form panel-->
+                  <div class="multisteps-form__panel shadow p-4 rounded bg-white js-active" data-animation="scaleIn">
+                    <h3 class="multisteps-form__title">Choose Training Dataset</h3>
+                    <div class="multisteps-form__content">
+                      <div class="form-group">
+                        <label for="available-dataset" class="form-control-label">Available Dataset</label>
+                        <select name="existing_dataset" class="form-control" id="available-dataset">
+                          <option value="A">A</option>
+                          <option value="B">B</option>
+                          <option value="C">C</option>
+                        </select>
+                      </div>
+                      <div class="row mb-4">
+                        <div class="col-12">
+                          <h3>Dataset Detail</h3>
                         </div>
-                        <div class="col">
+                      </div>
+                      <div class="custom-control custom-checkbox mb-4">
+                        <input type="checkbox" class="custom-control-input" id="use-my-own-dataset">
+                        <label class="custom-control-label" for="use-my-own-dataset">Use My Own Dataset</label>
+                      </div>
+                      <div class="form-group">
+                        <label for="new-dataset-source" class="form-control-label">New Dataset File</label>
+                        <div class="custom-file">
+                          <input type="file" class="custom-file-input" id="new-dataset-source" name='dataset_source'
+                            accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel"
+                            disabled>
+                          <label class="custom-file-label" for="customFileLang">Select file</label>
                         </div>
+                      </div>
                     </div>
-                </div>
-                <div class="card-body">
-                    <img src="data:image/png;base64,{{ figure|safe }}" alt="" class="img-fluid">
-                </div>
+                    <div class="button-row d-flex mt-4">
+                      <button class="btn btn-primary ml-auto js-btn-next" type="button" title="Next">Next</button>
+                    </div>
+                  </div>
+                  <!--single form panel-->
+                  <div class="multisteps-form__panel shadow p-4 rounded bg-white" data-animation="scaleIn">
+                    <h3 class="multisteps-form__title">Create or Choose ML Model</h3>
+                    <div class="multisteps-form__content">
+                      <div class="form-group">
+                        <label for="available-dataset" class="form-control-label">Available Model</label>
+                        <select name="existing_dataset" class="form-control" id="available-model">
+                          <option value="A">A</option>
+                          <option value="B">B</option>
+                          <option value="C">C</option>
+                        </select>
+                      </div>
+                      <div class="row mb-4">
+                        <div class="col-12">
+                          <h3>Dataset Detail</h3>
+                        </div>
+                      </div>
+                      <div class="custom-control custom-checkbox mb-4">
+                        <input type="checkbox" class="custom-control-input" id="use-my-own-model">
+                        <label class="custom-control-label" for="use-my-own-model">Create New Model</label>
+                      </div>
+                      <div class="form-group">
+                        <label for="feature-selection" class="form-control-label">Feature Selection Algorithm</label>
+                        <select name="feature_selection" class="form-control" id="feature-selection" disabled>
+                          <option value="f_score">F-Score</option>
+                          <option value="chi_square">Chi-square</option>
+                          <option value="cfs">Correlation-based Feature Selection</option>
+                        </select>
+                      </div>
+                      <div class="form-group">
+                        <label for="regularization-input" class="form-control-label">Regularization (C)</label>
+                        <input type="number" class="form-control" id="regularization-input" name="regularization"
+                          placeholder="Regularization (default 1.0)" step=".01" disabled>
+                      </div>
+                      <div class="form-group">
+                        <label for="epsilon-input" class="form-control-label">Epsilon</label>
+                        <input type="number" class="form-control" id="epsilon-input" name="epsilon"
+                          placeholder="Epsilon (default 1.0)" step=".01" disabled>
+                      </div>
+                    </div>
+                    <div class="button-row d-flex mt-4">
+                      <button class="btn btn-primary js-btn-prev" type="button" title="Prev">Prev</button>
+                      <button class="btn btn-primary ml-auto js-btn-next" type="button" title="Next">Next</button>
+                    </div>
+                  </div>
+                  <!--single form panel-->
+                  <div class="multisteps-form__panel shadow p-4 rounded bg-white" data-animation="scaleIn">
+                    <h3 class="multisteps-form__title">Predict Dataset</h3>
+                    <div class="multisteps-form__content">
+                      <div class="form-group">
+                        <label for="dataset-source" class="form-control-label">Dataset File</label>
+                        <div class="custom-file">
+                          <input type="file" class="custom-file-input" id="dataset-source" name='dataset_source'
+                            accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel">
+                          <label class="custom-file-label" for="customFileLang">Select file</label>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="button-row d-flex mt-4">
+                      <button class="btn btn-primary js-btn-prev" type="button" title="Prev">Prev</button>
+                      <button class="btn btn-success ml-auto" type="button" title="Send">Send</button>
+                    </div>
+                  </div>
+                </form>
+              </div>
             </div>
+          </div>
         </div>
+      </div>
     </div>
-    <div class="row">
-        <div class="col-xl">
-            <div class="card">
-                <div class="card-header bg-transparent">
-                    <div class="row align-items-center">
-                        <div class="col">
-                            <h6 class="text-uppercase text-muted ls-1 mb-1">Experiment</h6>
-                            <h5 class="h3 mb-0">Result</h5>
-                        </div>
-                    </div>
-                </div>
-                <div class="card-body">
-                    <div class="table-responsive table-hover point_row_table">
-                        <div>
-                            <table class="table align-items-center" id="js-city-table">
-                                <thead class="thead-light">
-                                    <tr>
-                                        <th scope="col">No</th>
-                                        {% for header in table_header %}
-                                        <th scope="col">{{ header }}</th>
-                                        {% endfor %}
-                                    </tr>
-                                </thead>
-                                <tbody class="list">
-                                    {% for data in prediction_data %}
-                                    <tr onclick="getPredictionId({{ data.id }})">
-                                        <td scope="col">{{ forloop.counter }}</td>
-                                        {% for key, value in data.items %}
-                                        {% if key != 'id' %}
-                                        <td scope="col">{{ value }}</td>
-                                        {% endif %}
-                                        {% endfor %}
-                                    </tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
+  </div>
+  <div class="row">
+    <div class="col-xl-8">
+      <div class="card">
+        <div class="card-header">
+          <div class="row align-items-center">
+            <div class="col">
+              <h6 class="text-light text-uppercase ls-1 mb-1">Result</h6>
+              <h5 class="h3 mb-0">Detail</h5>
             </div>
+            <div class="col">
+            </div>
+          </div>
         </div>
+        <div class="card-body">
+          <span class="row">
+            <span class="col">Best RMSE</span>
+            <span class="col float-right">{{ best_rmse }}</span>
+          </span>
+          <span class="row">
+            <span class="col">Best R<sup>2</sup></span>
+            <span class="col float-right">{{ best_r2 }}</span>
+          </span>
+        </div>
+      </div>
     </div>
-    {% include 'footer.html' %}
+    <div class="col-xl-4">
+      <div class="card">
+        <div class="card-header">
+          <div class="row align-items-center">
+            <div class="col">
+              <h6 class="text-light text-uppercase ls-1 mb-1">Result</h6>
+              <h5 class="h3 mb-0">chart</h5>
+            </div>
+            <div class="col">
+            </div>
+          </div>
+        </div>
+        <div class="card-body">
+          <img src="data:image/png;base64,{{ figure|safe }}" alt="" class="img-fluid">
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-xl">
+      <div class="card">
+        <div class="card-header bg-transparent">
+          <div class="row align-items-center">
+            <div class="col">
+              <h6 class="text-uppercase text-muted ls-1 mb-1">Experiment</h6>
+              <h5 class="h3 mb-0">Result</h5>
+            </div>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="table-responsive table-hover point_row_table">
+            <div>
+              <table class="table align-items-center" id="js-city-table">
+                <thead class="thead-light">
+                  <tr>
+                    <th scope="col">No</th>
+                    {% for header in table_header %}
+                    <th scope="col">{{ header }}</th>
+                    {% endfor %}
+                  </tr>
+                </thead>
+                <tbody class="list">
+                  {% for data in prediction_data %}
+                  <tr onclick="getPredictionId({{ data.id }})">
+                    <td scope="col">{{ forloop.counter }}</td>
+                    {% for key, value in data.items %}
+                    {% if key != 'id' %}
+                    <td scope="col">{{ value }}</td>
+                    {% endif %}
+                    {% endfor %}
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% include 'footer.html' %}
 </div>
 {% endblock %}
 
 {% block footer_js %}
 <script src="{% static 'select2/select2.min.js' %}"></script>
+<script src="{% static 'multistep-form/script.js' %}"></script>
 <script>
-    $(document).ready(function () {
-        $('.dependent-variable').select2({
-            placeholder: "Please select an option",
-        });
-        $('.ignored-columns').select2({
-            placeholder: "Please select an option",
-        });
+  const useMyOwnDatasetCheckbox = $("#use-my-own-dataset");
+  const availableDatasetSelect = $("#available-dataset");
+  const newDatasetSourceFile = $("#new-dataset-source");
 
-        let pred_result = $('#chart-pred').data("predResult");
-        let real_data = $('#chart-pred').data("predTrue");
+  const useMyOwnModel = $("#use-my-own-model");
+  const availableModel = $("#available-model");
+  const featureSelection = $("#feature-selection");
+  const regularizationInput = $("#regularization-input")
+  const epsilonInput = $("#epsilon-input");
 
-        var scatterChartData = {
-            datasets: [{
-                    label: 'Prediction Result',
-                    borderColor: 'red',
-                    backgroundColor: 'rgba(255,0,0,0.5)',
-                    data: pred_result,
-                    showLine: false,
-                },
-                {
-                    label: '',
-                    data: real_data,
-                    type: 'line',
-                    pointRadius: 0,
-                    borderColor: 'yellow',
-                    backgroundColor: 'rgba(255,255,255,0.0)',
-                    options: {
-                        legend: {
-                            display: false
-                        }
-                    }
-                }
-            ]
-        };
-        drawChart(scatterChartData);
+  function useMyOwnDataset() {
+    useMyOwnDatasetCheckbox.click(function () {
+      if ($(this).prop("checked") == true) {
+        availableDatasetSelect.prop("disabled", true);
+        newDatasetSourceFile.prop("disabled", false);
+      } else if ($(this).prop("checked") == false) {
+        availableDatasetSelect.prop("disabled", false);
+        newDatasetSourceFile.prop("disabled", true);
+      }
+    });
+  }
+
+  function createNewModel() {
+    useMyOwnModel.click(function(){
+      if ($(this).prop("checked") == true) {
+        availableModel.prop("disabled", true);
+        featureSelection.prop("disabled", false)
+        regularizationInput.prop("disabled", false)
+        epsilonInput.prop("disabled", false)
+      } else {
+        availableModel.prop("disabled", false);
+        featureSelection.prop("disabled", true)
+        regularizationInput.prop("disabled", true)
+        epsilonInput.prop("disabled", true)
+      }
+    });
+  }
+  
+  $(document).ready(function () {
+    useMyOwnDataset();
+    createNewModel();
+    $('.dependent-variable').select2({
+      placeholder: "Please select an option",
+    });
+    $('.ignored-columns').select2({
+      placeholder: "Please select an option",
     });
 
-    function drawChart(dataset) {
-        var scatterChart = new Chart($('#chart-pred'), {
-            type: 'scatter',
-            data: dataset,
-            options: {
-                title: {
-                    display: true,
-                    text: "Prediction Result",
-                },
-                responsive: true, // Instruct chart js to respond nicely.
-                maintainAspectRatio: false, // Add to prevent default behaviour of full-width/height 
-            }
-        });
-    }
+    let pred_result = $('#chart-pred').data("predResult");
+    let real_data = $('#chart-pred').data("predTrue");
 
-    function getPredictionId(id) {
-        $.ajax({
-            url: `/predicts/prediction_result/${id}/`,
-            method: 'GET',
-            success: function (res) {
-                let response = res.data;
-                console.log(response);
-                var scatterChartData = {
-                    datasets: [{
-                            label: 'Prediction Result',
-                            borderColor: 'red',
-                            backgroundColor: 'rgba(255,0,0,0.5)',
-                            data: response.prediction_results,
-                            showLine: false,
-                        },
-                        {
-                            label: '',
-                            data: response.real_data,
-                            type: 'line',
-                            pointRadius: 0,
-                            borderColor: 'yellow',
-                            backgroundColor: 'rgba(255,255,255,0.0)',
-                            options: {
-                                legend: {
-                                    display: false
-                                }
-                            }
-                        }
-                    ]
-                };
-                drawChart(scatterChartData);
+    var scatterChartData = {
+      datasets: [{
+          label: 'Prediction Result',
+          borderColor: 'red',
+          backgroundColor: 'rgba(255,0,0,0.5)',
+          data: pred_result,
+          showLine: false,
+        },
+        {
+          label: '',
+          data: real_data,
+          type: 'line',
+          pointRadius: 0,
+          borderColor: 'yellow',
+          backgroundColor: 'rgba(255,255,255,0.0)',
+          options: {
+            legend: {
+              display: false
             }
-        });
-    }
+          }
+        }
+      ]
+    };
+    drawChart(scatterChartData);
+  });
+
+  function drawChart(dataset) {
+    var scatterChart = new Chart($('#chart-pred'), {
+      type: 'scatter',
+      data: dataset,
+      options: {
+        title: {
+          display: true,
+          text: "Prediction Result",
+        },
+        responsive: true, // Instruct chart js to respond nicely.
+        maintainAspectRatio: false, // Add to prevent default behaviour of full-width/height 
+      }
+    });
+  }
+
+  function getPredictionId(id) {
+    $.ajax({
+      url: `/predicts/prediction_result/${id}/`,
+      method: 'GET',
+      success: function (res) {
+        let response = res.data;
+        console.log(response);
+        var scatterChartData = {
+          datasets: [{
+              label: 'Prediction Result',
+              borderColor: 'red',
+              backgroundColor: 'rgba(255,0,0,0.5)',
+              data: response.prediction_results,
+              showLine: false,
+            },
+            {
+              label: '',
+              data: response.real_data,
+              type: 'line',
+              pointRadius: 0,
+              borderColor: 'yellow',
+              backgroundColor: 'rgba(255,255,255,0.0)',
+              options: {
+                legend: {
+                  display: false
+                }
+              }
+            }
+          ]
+        };
+        drawChart(scatterChartData);
+      }
+    });
+  }
 </script>
 {% endblock %}
