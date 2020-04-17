@@ -9,7 +9,7 @@ class Prediction(models.Model):
     ]
     name = models.CharField(max_length=100, null=True, blank=True, default="")
     feature_selection = models.CharField(max_length=10, choices=FEATURE_SELECTION_CHOICES, default="")
-    reguralization = models.FloatField(default=1.0)
+    regularization = models.FloatField(default=1.0)
     epsilon = models.FloatField(default=1.0)
     accuracy_value = models.FloatField(default=0.0)
     error_value = models.FloatField(default=0.0)

@@ -41,7 +41,7 @@ dataset_column_names = [
 prediction_result_table_header = [
     "name",
     "feature selection",
-    "reguralization",
+    "regularization",
     "epsilon",
     "accuracy value",
     "error value",
@@ -51,7 +51,7 @@ prediction_column_names = [
     "id",
     "name",
     "feature_selection",
-    "reguralization",
+    "regularization",
     "epsilon",
     "accuracy_value",
     "error_value",
@@ -126,14 +126,18 @@ def predictor(request):
     predictions = Prediction.objects.values_list("id",
                                                  "name",
                                                  "feature_selection",
-                                                 "reguralization",
+                                                 "regularization",
                                                  "epsilon",
                                                  "accuracy_value",
                                                  "error_value")
-    dataset_profiles = DatasetProfile.objects.all()
+    dataset_profiles = DatasetProfile.objects.values("id",
+                                                 "valid_date",
+                                                 "total_row")
+
+    print(dataset_profiles, flush=True)
 
     prediction_data = [dict(zip(prediction_column_names, data)) for data in predictions]
-    dataset_profiles_data = [model_to_dict(data) for data in dataset_profiles]
+
 
     context = {
         'dataset_column_names': dataset_column_names,
@@ -141,7 +145,7 @@ def predictor(request):
         'real_data': [],
         'table_header': prediction_result_table_header,
         'prediction_data': prediction_data,
-        'dataset_profiles_data': dataset_profiles_data,
+        'dataset_profiles_data': dataset_profiles,
     }
 
     if request.method == "GET":
@@ -162,16 +166,6 @@ def predictor(request):
         regularization = float(regularization) if regularization != None else 1.0
         epsilon = float(epsilon) if epsilon != None else 0.1
 
-        print("new_model", new_model, flush=True)
-        print("new_dataset", new_dataset, flush=True)
-        print("existing_model", existing_model, flush=True)
-        print("feature_selection", feature_selection, flush=True)
-        print("regularization", regularization, flush=True)
-        print("epsilon", epsilon, flush=True)
-        print("existing_dataset", existing_dataset, flush=True)
-        print("dataset_source", dataset_source, flush=True)
-        print("dataset_predict", dataset_predict, flush=True)
-
         response = {}
         if not validate_request(request):
             response["success"] = False
@@ -191,27 +185,27 @@ def predictor(request):
                                     features=Conversion.to_list(Conversion, model.ranked_index),
                                     url=model.dumped_model)
             print("REGRESSOR RESULT", result, flush=True)
+
+            ranked_feature = model.ranked_index.split(",")
+            feature_names = dataset_column_names[2:]
+            sorted_feature = [feature_names[int(i)] for i in ranked_feature]
+
+            response["success"] = True
+            response["r2"] = model.accuracy_value
+            response["rmse"] = model.error_value
+            response["regularization"] = model.regularization
+            response["epsilon"] = model.epsilon
+            response["feature_num"] = model.feature_num
+            response["sorted_feature"] = sorted_feature
+            return JsonResponse(response, content_type="application/json")
         else:
-            """
-            TODO
-            get new model parameters -
-                + feature_selection -
-                + regularization -
-                + epsilon -
-            get dataset training
-                from existing dataset -
-                from new dataset -
-                    save new dataset to db
-                    save trained model to db
-            get dataset testing -
-            """
             if new_dataset != "on":
                 dataset_profile = DatasetProfile.objects.get(pk=existing_dataset)
                 dataset_data = Dataset.objects.filter(profile=dataset_profile)
                 dataset_source = None
             else:
                 dataset_source = request.FILES['dataset_source']
-                save_dataset_to_db(dataset_source)
+                # save_dataset_to_db(dataset_source)
                 dataset_data = None
 
             """
@@ -221,6 +215,7 @@ def predictor(request):
                 .lowest_score => rmse
                 .jumlah fitur dengan terbaik
                 .model terbaik
+                .ranked index
             3. result => detail hasil r2 dari 10 fitur hingga 96 fitur (array)
                 -> [fitur, r2, rmse]
             4. hasil percobaan prediksi per 10 fitur (array)
@@ -242,7 +237,7 @@ def predictor(request):
 
             data_for_input = {
                 "feature_selection": feature_selection,
-                "reguralization": regularization,
+                "regularization": regularization,
                 "epsilon": epsilon,
                 "accuracy_value": best_score[0],
                 "error_value": best_score[1],
@@ -252,52 +247,32 @@ def predictor(request):
                 "dumped_model": full_model_file_path,
             }
             # save model
-            save_model_to_db(data_for_input)
+            # save_model_to_db(data_for_input)
 
             print("NEW REGRESSOR RESULT", result, flush=True)
 
-        return JsonResponse({}, content_type="application/json")
+            """
+            MUST RESPONSE:
+            best r2
+            best rmse
+            regularization val
+            epsilon val
+            feature num
+            best to worst feature
+            new model
+            new dataset
+            """
+            feature_names = dataset_column_names[2:]
+            sorted_feature = [feature_names[i] for i in best_score[4]]
 
-        # best_pred, best_score, result, ten_column_predictions, y_true, filename = \
-        #     svr.predict(dataset_data, fs_algorithm, C, epsilon)
-        #
-        # # get full file path
-        # SITE_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-        # full_model_file_path = SITE_ROOT + "/" + filename
-        #
-        # ranked_index = [str(i) for i in best_score[4]]
-        # ranked_index = ",".join(ranked_index)
-        #
-        # data_for_input = {
-        #     "feature_selection": fs_algorithm,
-        #     "reguralization": C,
-        #     "epsilon": epsilon,
-        #     "accuracy_value": best_score[0],
-        #     "error_value": best_score[1],
-        #     "pred_result": best_pred,
-        #     "feature_num": best_score[2],
-        #     "ranked_index": ranked_index,
-        #     "dumped_model": full_model_file_path,
-        # }
-
-        # save_to_db(data_for_input)
-        #
-        # y_pred, y_true = list(best_pred.values()), y_true
-
-        # uri = draw_figure(y_pred, y_true)
-
-        # pred_result = []
-        # real_data = []
-        # for i, (key, value) in enumerate(best_pred.items()):
-        #     each_pred_result = {"x": y_true[i], "y": value}
-        #     each_real_data = {"x": y_true[i], "y": y_true[i]}
-        #     pred_result.append(each_pred_result)
-        #     real_data.append(each_real_data)
-        # context["best_rmse"] = round(best_score[0], 8)
-        # context["best_r2"] = round(best_score[1], 8)
-        # context["pred_result"] = json.dumps(pred_result)
-        # context["real_data"] = json.dumps(real_data)
-        # context["figure"] = uri
+            response["success"] = True
+            response["r2"] = best_score[0]
+            response["rmse"] = best_score[1]
+            response["regularization"] = regularization
+            response["epsilon"] = epsilon
+            response["feature_num"] = best_score[2]
+            response["sorted_feature"] = sorted_feature
+            return JsonResponse(response, content_type="application/json")
 
 
 def draw_figure(predicted, real):
@@ -383,7 +358,7 @@ def prediction_result(request, prediction_id):
 
         the_data["name"] = prediction.name
         the_data["feature_selection"] = prediction.feature_selection
-        the_data["reguralization"] = prediction.reguralization
+        the_data["regularization"] = prediction.regularization
         the_data["epsilon"] = prediction.epsilon
         the_data["created_at"] = prediction.created_at
         the_data["updated_at"] = prediction.updated_at

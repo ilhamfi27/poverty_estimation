@@ -99,7 +99,7 @@
                           <option value="">Select Available Dataset</option>
 
                           {% for data in dataset_profiles_data %}
-                          <option value="{{ data.id }}">{{ data.valid_date }}</option>
+                          <option value="{{ data.id }}">{{ data.valid_date }} - {{ data.total_row }} Rows</option>
                           {% endfor %}
                         </select>
                       </div>
