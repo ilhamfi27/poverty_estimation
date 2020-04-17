@@ -3,6 +3,7 @@ from django.shortcuts import render, redirect
 from datasets.models import Dataset, City, DatasetProfile
 from django.forms.models import model_to_dict
 from .models import Prediction, PredictionResult
+from .validator import validate_request
 import predicts.svr as svr
 import matplotlib.pyplot as plt
 import os
@@ -10,6 +11,7 @@ import json
 import io
 import urllib, base64
 import numpy as np
+import pandas as pd
 
 dataset_column_names = [
     'city_id', 'BPS_poverty_rate', 'sum_price_car', 'avg_price_car', 'std_price_car', 'sum_sold_car',
@@ -145,8 +147,10 @@ def predictor(request):
     }
 
     if request.method == "GET":
-        pass
+        return render(request, 'predicts/predictor.html', context=context)
     elif request.method == "POST":
+        new_model = request.POST.get("new_model")
+        new_dataset = request.POST.get("new_dataset")
         existing_model = request.POST.get("existing_model")
         feature_selection = request.POST.get("feature_selection")
         regularization = request.POST.get("regularization")
@@ -154,6 +158,50 @@ def predictor(request):
         existing_dataset = request.POST.get("existing_dataset")
         dataset_source = request.POST.get("dataset_source")
         dataset_predict = request.POST.get("dataset_predict")
+
+        print("new_model", new_model, flush=True)
+        print("new_dataset", new_dataset, flush=True)
+        print("existing_model", existing_model, flush=True)
+        print("feature_selection", feature_selection, flush=True)
+        print("regularization", regularization, flush=True)
+        print("epsilon", epsilon, flush=True)
+        print("existing_dataset", existing_dataset, flush=True)
+        print("dataset_source", dataset_source, flush=True)
+        print("dataset_predict", dataset_predict, flush=True)
+
+        response = {}
+        if not validate_request(request):
+            response["success"] = False
+            response["message"] = "Bad Request"
+            return JsonResponse(response, content_type="application/json")
+
+        # get model -
+        # get dataset testing -
+        # predict!
+        if new_model != "on":
+            model = Prediction.objects.get(pk=existing_model)
+            source_file = request.FILES['dataset_predict']
+
+            dataframe = pd.read_excel(source_file)
+
+            result = svr.load_model(dataframe=dataframe, features=Conversion.to_list(Conversion, model.ranked_index),
+                                    url=model.dumped_model)
+            print(result, flush=True)
+        else:
+            """
+            TODO
+            get new model parameters
+            get dataset training
+                from existing dataset
+                from new dataset
+                    save new dataset to db
+                save trained model
+            get dataset testing
+            """
+            pass
+
+
+        return JsonResponse({}, content_type="application/json")
 
         # best_pred, best_score, result, ten_column_predictions, y_true, filename = \
         #     svr.predict(dataset_data, fs_algorithm, C, epsilon)
@@ -195,7 +243,6 @@ def predictor(request):
         # context["pred_result"] = json.dumps(pred_result)
         # context["real_data"] = json.dumps(real_data)
         # context["figure"] = uri
-    return render(request, 'predicts/predictor.html', context=context)
 
 
 def draw_figure(predicted, real):

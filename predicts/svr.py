@@ -159,22 +159,26 @@ def trainf(X, y, C=1.0, epsilon=0.1):
     return best_pred, [best_score, lowest_error, best_feature_num, best_regressor], result, ten_column_predictions
 
 
-def load_model(dataset_data, features, url=""):
+def load_model(features=None, dataframe=None, dataset=None, url=""):
     sc = MinMaxScaler(feature_range=(0,10))
-    dataset_data = [model_to_dict(data) for data in dataset_data]
+
+    print(dataframe, flush=True)
 
     sorted_feature = []
 
-    df = pd.DataFrame(dataset_data)
-    city_id = df.iloc[0:, 1].values # city id
-    raw_X = df.iloc[0:, 4:].values # dataset
+    df = pd.DataFrame(dataframe)
+    city_id = df.iloc[0:, 0].values
+    raw_X = df.iloc[0:,2:].values # dataset
+    raw_y = df.iloc[0:,1].values # label
 
     # 2. pre-processing
     clean_X = np.nan_to_num(raw_X)
+    clean_y = np.nan_to_num(raw_y)
 
     # 3. normalization
     sc.fit(raw_X)
     X = np.array(sc.transform(clean_X))
+    y = np.array(clean_y)
 
     for row in X:
         row_array = []
