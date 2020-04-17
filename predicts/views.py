@@ -195,15 +195,15 @@ def predictor(request):
             """
             TODO
             get new model parameters -
-                + feature_selection
-                + regularization
-                + epsilon
+                + feature_selection -
+                + regularization -
+                + epsilon -
             get dataset training
-                from existing dataset
-                from new dataset
+                from existing dataset -
+                from new dataset -
                     save new dataset to db
-                save trained model
-            get dataset testing
+                    save trained model to db
+            get dataset testing -
             """
             if new_dataset != "on":
                 dataset_profile = DatasetProfile.objects.get(pk=existing_dataset)
@@ -211,6 +211,7 @@ def predictor(request):
                 dataset_source = None
             else:
                 dataset_source = request.FILES['dataset_source']
+                save_dataset_to_db(dataset_source)
                 dataset_data = None
 
             """
@@ -235,6 +236,24 @@ def predictor(request):
             result = svr.load_model(dataframe=training_dataframe,
                                     features=best_score[4],
                                     regressor=regressor)
+
+            ranked_index = [str(i) for i in best_score[4]]
+            ranked_index = ",".join(ranked_index)
+
+            data_for_input = {
+                "feature_selection": feature_selection,
+                "reguralization": regularization,
+                "epsilon": epsilon,
+                "accuracy_value": best_score[0],
+                "error_value": best_score[1],
+                "pred_result": best_pred,
+                "feature_num": best_score[2],
+                "ranked_index": ranked_index,
+                "dumped_model": full_model_file_path,
+            }
+            # save model
+            save_model_to_db(data_for_input)
+
             print("NEW REGRESSOR RESULT", result, flush=True)
 
         return JsonResponse({}, content_type="application/json")
@@ -308,7 +327,7 @@ def draw_figure(predicted, real):
     return uri
 
 
-def save_to_db(data_dict):
+def save_model_to_db(data_dict):
     prediction_data = data_dict
     prediction_result_values = data_dict["pred_result"]
     prediction_data.pop("pred_result")
@@ -326,6 +345,23 @@ def save_to_db(data_dict):
 
     prediction_result = PredictionResult.objects.bulk_create(prediction_results)
 
+
+def save_dataset_to_db(source_file):
+    dataframe = pd.read_excel(source_file)
+    dataframe_data = np.nan_to_num(dataframe.iloc[0:, :].values)
+    dataset_profile = DatasetProfile.objects.create(total_row=len(dataframe_data))
+
+    for row in dataframe_data:
+        row_data = []
+        for cell in row:
+            row_data.append(cell)
+        zipped_data = dict(zip(dataset_column_names, row_data))
+
+        # make city id integer instead of float
+        zipped_data['city_id'] = int(zipped_data['city_id'])
+        zipped_data['profile'] = dataset_profile
+
+        Dataset.objects.create(**zipped_data)
 
 # ajax request handler
 def prediction_result(request, prediction_id):
