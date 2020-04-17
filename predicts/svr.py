@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 import pickle
+import os
 from datetime import datetime
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.svm import SVR
@@ -13,16 +14,28 @@ from skfeature.function.statistical_based import chi_square
 from skfeature.function.statistical_based import CFS
 
 
-def predict(dataset_data, fs_algorithm, C=1.0, epsilon=0.1):
+def predict(fs_algorithm=None, dataframe=None, dataset=None, C=1.0, epsilon=0.1):
     sc = MinMaxScaler(feature_range=(0,10))
-    dataset_data = [model_to_dict(data) for data in dataset_data]
-
     best_sort_feature = []
 
-    df = pd.DataFrame(dataset_data)
-    city_id = df.iloc[0:, 1].values # city id
-    raw_X = df.iloc[0:, 4:].values # dataset
-    raw_y = df.iloc[0:, 3].values # label
+    if dataframe == None and dataset == None:
+        return None
+
+    if dataset:
+        dataset_data = [model_to_dict(data) for data in dataset]
+
+        df = pd.DataFrame(dataset_data)
+
+        city_id = df.iloc[0:, 1].values # city id
+        raw_X = df.iloc[0:, 4:].values # dataset
+        raw_y = df.iloc[0:, 3].values # label
+
+    if dataframe:
+        df = pd.read_excel(dataframe)
+        city_id = df.iloc[0:, 0].values
+        raw_X = df.iloc[0:,2:].values # dataset
+        raw_y = df.iloc[0:,1].values # label
+
 
     # 2. pre-processing
     clean_X = np.nan_to_num(raw_X)
@@ -58,6 +71,9 @@ def predict(dataset_data, fs_algorithm, C=1.0, epsilon=0.1):
 
     # set filename
     filename = "dumped_model/svr_"+ fs_algorithm + "_" + time +"_.sav"
+    # get full file path
+    SITE_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    full_model_file_path = SITE_ROOT + "/" + filename
 
     # get regressor
     regressor = best_score[3]
@@ -89,7 +105,7 @@ def predict(dataset_data, fs_algorithm, C=1.0, epsilon=0.1):
     5. actual poverty rate
     6. filename
     """
-    return best_pred, best_score, result, ten_column_predictions, y_true, filename
+    return best_pred, best_score, result, ten_column_predictions, y_true, full_model_file_path
 
 
 def trainf(X, y, C=1.0, epsilon=0.1):
@@ -159,10 +175,8 @@ def trainf(X, y, C=1.0, epsilon=0.1):
     return best_pred, [best_score, lowest_error, best_feature_num, best_regressor], result, ten_column_predictions
 
 
-def load_model(features=None, dataframe=None, dataset=None, url=""):
+def load_model(features=None, dataframe=None, regressor=None, url=None):
     sc = MinMaxScaler(feature_range=(0,10))
-
-    print(dataframe, flush=True)
 
     sorted_feature = []
 
@@ -187,7 +201,11 @@ def load_model(features=None, dataframe=None, dataset=None, url=""):
         sorted_feature.append(row_array)
 
     # load the model from disk
-    loaded_model = pickle.load(open(url, 'rb'))
-    result = loaded_model.predict(sorted_feature)
+    if url:
+        loaded_model = pickle.load(open(url, 'rb'))
+        result = loaded_model.predict(sorted_feature)
+
+    if regressor:
+        result = regressor.predict(sorted_feature)
 
     return result, dict(zip(city_id, result))

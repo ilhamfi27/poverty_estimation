@@ -85,7 +85,6 @@ def index(request):
         context['best_plot'] = draw_figure(best_result, list_bps_poverty_rate)
         context['prediction_result'] = prediction_result
 
-
     return render(request, 'predicts/index.html', context=context)
 
 
@@ -94,7 +93,7 @@ def get_results(dataset_data, pred_instance):
         return [], []
 
     result = svr.load_model(dataset_data, Conversion.to_list(Conversion, pred_instance.ranked_index),
-                                    url=pred_instance.dumped_model)
+                            url=pred_instance.dumped_model)
     return result
 
 
@@ -104,7 +103,6 @@ def mapping_result(request):
         # get dataset
         best_prediction = Prediction.objects.order_by('-accuracy_value').first()
         prediction_result = PredictionResult.objects.filter(prediction=best_prediction)
-
 
         response = []
         for result in prediction_result:
@@ -126,12 +124,12 @@ def mapping_result(request):
 
 def predictor(request):
     predictions = Prediction.objects.values_list("id",
-                                                "name",
-                                                "feature_selection",
-                                                "reguralization",
-                                                "epsilon",
-                                                "accuracy_value",
-                                                "error_value")
+                                                 "name",
+                                                 "feature_selection",
+                                                 "reguralization",
+                                                 "epsilon",
+                                                 "accuracy_value",
+                                                 "error_value")
     dataset_profiles = DatasetProfile.objects.all()
 
     prediction_data = [dict(zip(prediction_column_names, data)) for data in predictions]
@@ -159,6 +157,11 @@ def predictor(request):
         dataset_source = request.POST.get("dataset_source")
         dataset_predict = request.POST.get("dataset_predict")
 
+        # convert string input to float
+        # to prevent error
+        regularization = float(regularization) if regularization != None else 1.0
+        epsilon = float(epsilon) if epsilon != None else 0.1
+
         print("new_model", new_model, flush=True)
         print("new_dataset", new_dataset, flush=True)
         print("existing_model", existing_model, flush=True)
@@ -175,22 +178,26 @@ def predictor(request):
             response["message"] = "Bad Request"
             return JsonResponse(response, content_type="application/json")
 
+        dataset_predict = request.FILES['dataset_predict']
+        training_dataframe = pd.read_excel(dataset_predict)
+
         # get model -
         # get dataset testing -
-        # predict!
+        # predict! -
         if new_model != "on":
             model = Prediction.objects.get(pk=existing_model)
-            source_file = request.FILES['dataset_predict']
 
-            dataframe = pd.read_excel(source_file)
-
-            result = svr.load_model(dataframe=dataframe, features=Conversion.to_list(Conversion, model.ranked_index),
+            result = svr.load_model(dataframe=training_dataframe,
+                                    features=Conversion.to_list(Conversion, model.ranked_index),
                                     url=model.dumped_model)
-            print(result, flush=True)
+            print("REGRESSOR RESULT", result, flush=True)
         else:
             """
             TODO
-            get new model parameters
+            get new model parameters -
+                + feature_selection
+                + regularization
+                + epsilon
             get dataset training
                 from existing dataset
                 from new dataset
@@ -198,8 +205,37 @@ def predictor(request):
                 save trained model
             get dataset testing
             """
-            pass
+            if new_dataset != "on":
+                dataset_profile = DatasetProfile.objects.get(pk=existing_dataset)
+                dataset_data = Dataset.objects.filter(profile=dataset_profile)
+                dataset_source = None
+            else:
+                dataset_source = request.FILES['dataset_source']
+                dataset_data = None
 
+            """
+            1. best prediction => hasil prediksi poverty rate (dictionary, key => city_id)
+            2. detail => detail best score (array)
+                .best_score => r2
+                .lowest_score => rmse
+                .jumlah fitur dengan terbaik
+                .model terbaik
+            3. result => detail hasil r2 dari 10 fitur hingga 96 fitur (array)
+                -> [fitur, r2, rmse]
+            4. hasil percobaan prediksi per 10 fitur (array)
+            5. actual poverty rate
+            6. filename
+            """
+            best_pred, best_score, result, ten_column_predictions, y_true, full_model_file_path = \
+                svr.predict(dataset=dataset_data, dataframe=dataset_source, fs_algorithm=feature_selection,
+                            C=regularization, epsilon=epsilon)
+
+            regressor = best_score[3]
+
+            result = svr.load_model(dataframe=training_dataframe,
+                                    features=best_score[4],
+                                    regressor=regressor)
+            print("NEW REGRESSOR RESULT", result, flush=True)
 
         return JsonResponse({}, content_type="application/json")
 
