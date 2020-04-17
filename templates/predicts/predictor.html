@@ -27,9 +27,9 @@
             <div class="row">
               <div class="col-12 col-lg-8 ml-auto mr-auto mb-4">
                 <div class="multisteps-form__progress">
-                  <button class="multisteps-form__progress-btn js-active" type="button" title="Choose">Choose
+                  <button class="multisteps-form__progress-btn js-active" type="button" title="Choose">ML Model
                   </button>
-                  <button class="multisteps-form__progress-btn" type="button" title="Address">ML Model</button>
+                  <button class="multisteps-form__progress-btn" type="button" title="Address">Data Train</button>
                   <button class="multisteps-form__progress-btn" type="button" title="Order Info">Predict</button>
                 </div>
               </div>
@@ -37,52 +37,22 @@
             <!--form panels-->
             <div class="row">
               <div class="col-12 col-lg-8 m-auto">
-                <form class="multisteps-form__form">
+                <form class="multisteps-form__form" action="/predicts/predictor/" id="predictor-form">
+                  {% csrf_token %}
                   <!--single form panel-->
-                  <div class="multisteps-form__panel shadow p-4 rounded bg-white js-active" data-animation="scaleIn">
-                    <h3 class="multisteps-form__title">Choose Training Dataset</h3>
-                    <div class="multisteps-form__content">
-                      <div class="form-group">
-                        <label for="available-dataset" class="form-control-label">Available Dataset</label>
-                        <select name="existing_dataset" class="form-control" id="available-dataset">
-                          <option value="A">A</option>
-                          <option value="B">B</option>
-                          <option value="C">C</option>
-                        </select>
-                      </div>
-                      <div class="row mb-4">
-                        <div class="col-12">
-                          <h3>Dataset Detail</h3>
-                        </div>
-                      </div>
-                      <div class="custom-control custom-checkbox mb-4">
-                        <input type="checkbox" class="custom-control-input" id="use-my-own-dataset">
-                        <label class="custom-control-label" for="use-my-own-dataset">Use My Own Dataset</label>
-                      </div>
-                      <div class="form-group">
-                        <label for="new-dataset-source" class="form-control-label">New Dataset File</label>
-                        <div class="custom-file">
-                          <input type="file" class="custom-file-input" id="new-dataset-source" name='dataset_source'
-                            accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel"
-                            disabled>
-                          <label class="custom-file-label" for="customFileLang">Select file</label>
-                        </div>
-                      </div>
-                    </div>
-                    <div class="button-row d-flex mt-4">
-                      <button class="btn btn-primary ml-auto js-btn-next" type="button" title="Next">Next</button>
-                    </div>
-                  </div>
-                  <!--single form panel-->
-                  <div class="multisteps-form__panel shadow p-4 rounded bg-white" data-animation="scaleIn">
+                  <div class="multisteps-form__panel shadow p-4 rounded bg-white js-active" id="choose-model"
+                    data-animation="scaleIn">
                     <h3 class="multisteps-form__title">Create or Choose ML Model</h3>
                     <div class="multisteps-form__content">
                       <div class="form-group">
-                        <label for="available-dataset" class="form-control-label">Available Model</label>
-                        <select name="existing_dataset" class="form-control" id="available-model">
-                          <option value="A">A</option>
-                          <option value="B">B</option>
-                          <option value="C">C</option>
+                        <label for="available-model" class="form-control-label">Available Model</label>
+                        <select name="existing_model" class="form-control" id="available-model">
+                          <option value="">Select Available Model</option>
+
+                          {% for data in prediction_data %}
+                          <option value="{{ data.id }}">{{ data.feature_selection }} - {{ data.accuracy_value }}
+                          </option>
+                          {% endfor %}
                         </select>
                       </div>
                       <div class="row mb-4">
@@ -114,18 +84,59 @@
                       </div>
                     </div>
                     <div class="button-row d-flex mt-4">
-                      <button class="btn btn-primary js-btn-prev" type="button" title="Prev">Prev</button>
-                      <button class="btn btn-primary ml-auto js-btn-next" type="button" title="Next">Next</button>
+                      <button class="btn btn-primary ml-auto js-btn-next" id="step-1" type="button"
+                        title="Next">Next</button>
                     </div>
                   </div>
                   <!--single form panel-->
-                  <div class="multisteps-form__panel shadow p-4 rounded bg-white" data-animation="scaleIn">
+                  <div class="multisteps-form__panel shadow p-4 rounded bg-white" id="choose-dataset"
+                    data-animation="scaleIn">
+                    <h3 class="multisteps-form__title">Choose Training Dataset</h3>
+                    <div class="multisteps-form__content">
+                      <div class="form-group">
+                        <label for="available-dataset" class="form-control-label">Available Dataset</label>
+                        <select name="existing_dataset" class="form-control" id="available-dataset">
+                          <option value="">Select Available Dataset</option>
+
+                          {% for data in dataset_profiles_data %}
+                          <option value="{{ data.id }}">{{ data.valid_date }}</option>
+                          {% endfor %}
+                        </select>
+                      </div>
+                      <div class="row mb-4">
+                        <div class="col-12">
+                          <h3>Dataset Detail</h3>
+                        </div>
+                      </div>
+                      <div class="custom-control custom-checkbox mb-4">
+                        <input type="checkbox" class="custom-control-input" id="use-my-own-dataset">
+                        <label class="custom-control-label" for="use-my-own-dataset">Use My Own Dataset</label>
+                      </div>
+                      <div class="form-group">
+                        <label for="new-dataset-source" class="form-control-label">New Dataset File</label>
+                        <div class="custom-file">
+                          <input type="file" class="custom-file-input" id="new-dataset-source" name="dataset_source"
+                            accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel"
+                            disabled>
+                          <label class="custom-file-label" for="customFileLang">Select file</label>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="button-row d-flex mt-4">
+                      <button class="btn btn-primary js-btn-prev" type="button" title="Prev">Prev</button>
+                      <button class="btn btn-primary ml-auto js-btn-next" id="step-2" type="button"
+                        title="Next">Next</button>
+                    </div>
+                  </div>
+                  <!--single form panel-->
+                  <div class="multisteps-form__panel shadow p-4 rounded bg-white" id="choose-testing-dataset"
+                    data-animation="scaleIn">
                     <h3 class="multisteps-form__title">Predict Dataset</h3>
                     <div class="multisteps-form__content">
                       <div class="form-group">
-                        <label for="dataset-source" class="form-control-label">Dataset File</label>
+                        <label for="dataset-predict" class="form-control-label">Dataset File</label>
                         <div class="custom-file">
-                          <input type="file" class="custom-file-input" id="dataset-source" name='dataset_source'
+                          <input type="file" class="custom-file-input" id="dataset-predict" name='dataset_predict'
                             accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel">
                           <label class="custom-file-label" for="customFileLang">Select file</label>
                         </div>
@@ -133,7 +144,7 @@
                     </div>
                     <div class="button-row d-flex mt-4">
                       <button class="btn btn-primary js-btn-prev" type="button" title="Prev">Prev</button>
-                      <button class="btn btn-success ml-auto" type="button" title="Send">Send</button>
+                      <button class="btn btn-success ml-auto" type="submit" title="Send">Send</button>
                     </div>
                   </div>
                 </form>
@@ -236,132 +247,5 @@
 {% block footer_js %}
 <script src="{% static 'select2/select2.min.js' %}"></script>
 <script src="{% static 'multistep-form/script.js' %}"></script>
-<script>
-  const useMyOwnDatasetCheckbox = $("#use-my-own-dataset");
-  const availableDatasetSelect = $("#available-dataset");
-  const newDatasetSourceFile = $("#new-dataset-source");
-
-  const useMyOwnModel = $("#use-my-own-model");
-  const availableModel = $("#available-model");
-  const featureSelection = $("#feature-selection");
-  const regularizationInput = $("#regularization-input")
-  const epsilonInput = $("#epsilon-input");
-
-  function useMyOwnDataset() {
-    useMyOwnDatasetCheckbox.click(function () {
-      if ($(this).prop("checked") == true) {
-        availableDatasetSelect.prop("disabled", true);
-        newDatasetSourceFile.prop("disabled", false);
-      } else if ($(this).prop("checked") == false) {
-        availableDatasetSelect.prop("disabled", false);
-        newDatasetSourceFile.prop("disabled", true);
-      }
-    });
-  }
-
-  function createNewModel() {
-    useMyOwnModel.click(function(){
-      if ($(this).prop("checked") == true) {
-        availableModel.prop("disabled", true);
-        featureSelection.prop("disabled", false)
-        regularizationInput.prop("disabled", false)
-        epsilonInput.prop("disabled", false)
-      } else {
-        availableModel.prop("disabled", false);
-        featureSelection.prop("disabled", true)
-        regularizationInput.prop("disabled", true)
-        epsilonInput.prop("disabled", true)
-      }
-    });
-  }
-  
-  $(document).ready(function () {
-    useMyOwnDataset();
-    createNewModel();
-    $('.dependent-variable').select2({
-      placeholder: "Please select an option",
-    });
-    $('.ignored-columns').select2({
-      placeholder: "Please select an option",
-    });
-
-    let pred_result = $('#chart-pred').data("predResult");
-    let real_data = $('#chart-pred').data("predTrue");
-
-    var scatterChartData = {
-      datasets: [{
-          label: 'Prediction Result',
-          borderColor: 'red',
-          backgroundColor: 'rgba(255,0,0,0.5)',
-          data: pred_result,
-          showLine: false,
-        },
-        {
-          label: '',
-          data: real_data,
-          type: 'line',
-          pointRadius: 0,
-          borderColor: 'yellow',
-          backgroundColor: 'rgba(255,255,255,0.0)',
-          options: {
-            legend: {
-              display: false
-            }
-          }
-        }
-      ]
-    };
-    drawChart(scatterChartData);
-  });
-
-  function drawChart(dataset) {
-    var scatterChart = new Chart($('#chart-pred'), {
-      type: 'scatter',
-      data: dataset,
-      options: {
-        title: {
-          display: true,
-          text: "Prediction Result",
-        },
-        responsive: true, // Instruct chart js to respond nicely.
-        maintainAspectRatio: false, // Add to prevent default behaviour of full-width/height 
-      }
-    });
-  }
-
-  function getPredictionId(id) {
-    $.ajax({
-      url: `/predicts/prediction_result/${id}/`,
-      method: 'GET',
-      success: function (res) {
-        let response = res.data;
-        console.log(response);
-        var scatterChartData = {
-          datasets: [{
-              label: 'Prediction Result',
-              borderColor: 'red',
-              backgroundColor: 'rgba(255,0,0,0.5)',
-              data: response.prediction_results,
-              showLine: false,
-            },
-            {
-              label: '',
-              data: response.real_data,
-              type: 'line',
-              pointRadius: 0,
-              borderColor: 'yellow',
-              backgroundColor: 'rgba(255,255,255,0.0)',
-              options: {
-                legend: {
-                  display: false
-                }
-              }
-            }
-          ]
-        };
-        drawChart(scatterChartData);
-      }
-    });
-  }
-</script>
+<script src="{% static 'js/predicts/predictor.js' %}"></script>
 {% endblock %}

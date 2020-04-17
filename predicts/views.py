@@ -1,6 +1,7 @@
 from django.http import JsonResponse
 from django.shortcuts import render, redirect
 from datasets.models import Dataset, City, DatasetProfile
+from django.forms.models import model_to_dict
 from .models import Prediction, PredictionResult
 import predicts.svr as svr
 import matplotlib.pyplot as plt
@@ -50,7 +51,7 @@ prediction_column_names = [
     "feature_selection",
     "reguralization",
     "epsilon",
-    "accuracy value",
+    "accuracy_value",
     "error_value",
 ]
 
@@ -122,77 +123,78 @@ def mapping_result(request):
 
 
 def predictor(request):
-    table_data = Prediction.objects.values_list("id",
+    predictions = Prediction.objects.values_list("id",
                                                 "name",
                                                 "feature_selection",
                                                 "reguralization",
                                                 "epsilon",
                                                 "accuracy_value",
                                                 "error_value")
+    dataset_profiles = DatasetProfile.objects.all()
 
-    prediction_data = [dict(zip(prediction_column_names, data)) for data in table_data]
+    prediction_data = [dict(zip(prediction_column_names, data)) for data in predictions]
+    dataset_profiles_data = [model_to_dict(data) for data in dataset_profiles]
 
     context = {
         'dataset_column_names': dataset_column_names,
         'chart_data': [],
         'real_data': [],
         'table_header': prediction_result_table_header,
-        'prediction_data': prediction_data
+        'prediction_data': prediction_data,
+        'dataset_profiles_data': dataset_profiles_data,
     }
 
     if request.method == "GET":
         pass
     elif request.method == "POST":
-        fs_algorithm = request.POST.get("feature_selection")
-        input_C = request.POST.get("regularization")  # 60.0  # ntar diambil dari form
-        input_epsilon = request.POST.get("epsilon")  # 0.2  # ntar diambil dari form
+        existing_model = request.POST.get("existing_model")
+        feature_selection = request.POST.get("feature_selection")
+        regularization = request.POST.get("regularization")
+        epsilon = request.POST.get("epsilon")
+        existing_dataset = request.POST.get("existing_dataset")
+        dataset_source = request.POST.get("dataset_source")
+        dataset_predict = request.POST.get("dataset_predict")
 
-        C = float(input_C) if input_C != "" else 1.0
-        epsilon = float(input_epsilon) if input_epsilon != "" else 0.1
+        # best_pred, best_score, result, ten_column_predictions, y_true, filename = \
+        #     svr.predict(dataset_data, fs_algorithm, C, epsilon)
+        #
+        # # get full file path
+        # SITE_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        # full_model_file_path = SITE_ROOT + "/" + filename
+        #
+        # ranked_index = [str(i) for i in best_score[4]]
+        # ranked_index = ",".join(ranked_index)
+        #
+        # data_for_input = {
+        #     "feature_selection": fs_algorithm,
+        #     "reguralization": C,
+        #     "epsilon": epsilon,
+        #     "accuracy_value": best_score[0],
+        #     "error_value": best_score[1],
+        #     "pred_result": best_pred,
+        #     "feature_num": best_score[2],
+        #     "ranked_index": ranked_index,
+        #     "dumped_model": full_model_file_path,
+        # }
 
-        dataset_profile = DatasetProfile.objects.order_by('-valid_date').first()
-        dataset_data = Dataset.objects.defer('profile').filter(profile=dataset_profile)
+        # save_to_db(data_for_input)
+        #
+        # y_pred, y_true = list(best_pred.values()), y_true
 
-        best_pred, best_score, result, ten_column_predictions, y_true, filename = \
-            svr.predict(dataset_data, fs_algorithm, C, epsilon)
+        # uri = draw_figure(y_pred, y_true)
 
-        # get full file path
-        SITE_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-        full_model_file_path = SITE_ROOT + "/" + filename
-
-        ranked_index = [str(i) for i in best_score[4]]
-        ranked_index = ",".join(ranked_index)
-
-        data_for_input = {
-            "feature_selection": fs_algorithm,
-            "reguralization": C,
-            "epsilon": epsilon,
-            "accuracy_value": best_score[0],
-            "error_value": best_score[1],
-            "pred_result": best_pred,
-            "feature_num": best_score[2],
-            "ranked_index": ranked_index,
-            "dumped_model": full_model_file_path,
-        }
-
-        save_to_db(data_for_input)
-
-        y_pred, y_true = list(best_pred.values()), y_true
-
-        uri = draw_figure(y_pred, y_true)
-
-        pred_result = []
-        real_data = []
-        for i, (key, value) in enumerate(best_pred.items()):
-            each_pred_result = {"x": y_true[i], "y": value}
-            each_real_data = {"x": y_true[i], "y": y_true[i]}
-            pred_result.append(each_pred_result)
-            real_data.append(each_real_data)
-        context["best_rmse"] = round(best_score[0], 8)
-        context["best_r2"] = round(best_score[1], 8)
-        context["pred_result"] = json.dumps(pred_result)
-        context["real_data"] = json.dumps(real_data)
-        context["figure"] = uri
+        # pred_result = []
+        # real_data = []
+        # for i, (key, value) in enumerate(best_pred.items()):
+        #     each_pred_result = {"x": y_true[i], "y": value}
+        #     each_real_data = {"x": y_true[i], "y": y_true[i]}
+        #     pred_result.append(each_pred_result)
+        #     real_data.append(each_real_data)
+        # context["best_rmse"] = round(best_score[0], 8)
+        # context["best_r2"] = round(best_score[1], 8)
+        # context["pred_result"] = json.dumps(pred_result)
+        # context["real_data"] = json.dumps(real_data)
+        # context["figure"] = uri
     return render(request, 'predicts/predictor.html', context=context)
 
 
