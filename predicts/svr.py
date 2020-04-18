@@ -85,7 +85,7 @@ def predict(fs_algorithm=None, dataframe=None, dataset=None, C=1.0, epsilon=0.1)
     """
 
     # modified best prediction return value
-    best_pred = dict(zip(city_id, best_pred))
+    best_pred = [best_pred, dict(zip(city_id, best_pred))]
 
     # nambahin list ranked index dari pecahan 10 terbaik
     best_score.append(ranked_index[:best_score[2]])
@@ -207,5 +207,5 @@ def load_model(features=None, dataframe=None, regressor=None, url=None):
 
     if regressor:
         result = regressor.predict(sorted_feature)
-
-    return result, dict(zip(city_id, result))
+    y_true = y
+    return result, dict(zip(city_id, result)), y_true

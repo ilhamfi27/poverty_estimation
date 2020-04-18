@@ -4,6 +4,14 @@
 {% block head_css %}
 <link rel="stylesheet" href="{% static 'select2/select2.min.css' %}" type="text/css">
 <link rel="stylesheet" href="{% static 'multistep-form/multistep.css' %}" type="text/css">
+<link rel="stylesheet" href="{% static 'leaflet/leaflet.css' %}" type="text/css">
+<script src="{% static 'leaflet/leaflet.js' %}"></script>
+
+<style>
+  #poverty-mapping {
+    height: 350px;
+  }
+</style>
 {% endblock %}
 
 {% block page_content %}
@@ -12,16 +20,7 @@
   <div class="row">
     <div class="col-xl">
       <div class="card">
-        <div class="card-header bg-transparent">
-          <div class="row align-items-center">
-            <div class="col">
-              <h6 class="text-uppercase text-muted ls-1 mb-1">SVR Predict</h6>
-              <h5 class="h3 mb-0"></h5>
-            </div>
-          </div>
-        </div>
         <div class="card-body">
-
           <div class="multisteps-form">
             <!--progress bar-->
             <div class="row">
@@ -155,28 +154,19 @@
       </div>
     </div>
   </div>
-  <div class="row">
+  <div class="row" id="js-result-panels">
     <div class="col-xl-8">
       <div class="card">
-        <div class="card-header">
+        <div class="card-header bg-transparent">
           <div class="row align-items-center">
             <div class="col">
-              <h6 class="text-light text-uppercase ls-1 mb-1">Result</h6>
-              <h5 class="h3 mb-0">Detail</h5>
-            </div>
-            <div class="col">
+              <h6 class="text-uppercase text-muted ls-1 mb-1">Javanese Island Poverty Mapping</h6>
+              <h5 class="h3 mb-0"></h5>
             </div>
           </div>
         </div>
         <div class="card-body">
-          <span class="row">
-            <span class="col">Best RMSE</span>
-            <span class="col float-right">{{ best_rmse }}</span>
-          </span>
-          <span class="row">
-            <span class="col">Best R<sup>2</sup></span>
-            <span class="col float-right">{{ best_r2 }}</span>
-          </span>
+          <div id="poverty-mapping"></div>
         </div>
       </div>
     </div>
@@ -185,54 +175,87 @@
         <div class="card-header">
           <div class="row align-items-center">
             <div class="col">
-              <h6 class="text-light text-uppercase ls-1 mb-1">Result</h6>
-              <h5 class="h3 mb-0">chart</h5>
+              <h6 class="text-light text-uppercase ls-1 mb-1"></h6>
+              <h5 class="h3 mb-0">Result Chart</h5>
             </div>
             <div class="col">
             </div>
           </div>
         </div>
         <div class="card-body">
-          <img src="data:image/png;base64,{{ figure|safe }}" alt="" class="img-fluid">
+          <img src="" alt="" id="js-result_chart" class="img-fluid">
         </div>
       </div>
     </div>
   </div>
   <div class="row">
-    <div class="col-xl">
+    <div class="col-xl-5">
       <div class="card">
-        <div class="card-header bg-transparent">
+        <div class="card-header">
           <div class="row align-items-center">
             <div class="col">
-              <h6 class="text-uppercase text-muted ls-1 mb-1">Experiment</h6>
-              <h5 class="h3 mb-0">Result</h5>
+              <h6 class="text-light text-uppercase ls-1 mb-1"></h6>
+              <h5 class="h3 mb-0">Model Result Detail</h5>
+            </div>
+            <div class="col">
+            </div>
+          </div>
+        </div>
+        <div class="card-body">
+          <span class="row">
+            <span class="col">Best R<sup>2</sup></span>
+            <span class="col float-right" id="js-r2"></span>
+          </span>
+          <span class="row">
+            <span class="col">Best RMSE</span>
+            <span class="col float-right" id="js-rmse"></span>
+          </span>
+          <span class="row">
+            <span class="col">Regularization (C)</span>
+            <span class="col float-right" id="js-regularization"></span>
+          </span>
+          <span class="row">
+            <span class="col">Epsilon</span>
+            <span class="col float-right" id="js-epsilon"></span>
+          </span>
+          <span class="row">
+            <span class="col">Feature Used</span>
+            <span class="col float-right" id="js-feature_num"></span>
+          </span>
+          <span class="row">
+            <span class="col">Most Relevant Features:</span>
+          </span>
+          <div class="row">
+            <div class="col" id="js-sorted_feature"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-xl-7">
+      <div class="card">
+        <div class="card-header">
+          <div class="row align-items-center">
+            <div class="col">
+              <h6 class="text-light text-uppercase ls-1 mb-1">Cities Poverty Rate</h6>
+              <h5 class="h3 mb-0"></h5>
+            </div>
+            <div class="col">
             </div>
           </div>
         </div>
         <div class="card-body">
           <div class="table-responsive table-hover point_row_table">
             <div>
-              <table class="table align-items-center" id="js-city-table">
+              <table class="table align-items-center" id="js-poverty-result">
                 <thead class="thead-light">
                   <tr>
                     <th scope="col">No</th>
-                    {% for header in table_header %}
-                    <th scope="col">{{ header }}</th>
-                    {% endfor %}
+                    <th scope="col">City</th>
+                    <th scope="col">Province</th>
+                    <th scope="col">Poverty Rate</th>
                   </tr>
                 </thead>
-                <tbody class="list">
-                  {% for data in prediction_data %}
-                  <tr onclick="getPredictionId({{ data.id }})">
-                    <td scope="col">{{ forloop.counter }}</td>
-                    {% for key, value in data.items %}
-                    {% if key != 'id' %}
-                    <td scope="col">{{ value }}</td>
-                    {% endif %}
-                    {% endfor %}
-                  </tr>
-                  {% endfor %}
-                </tbody>
+                <tbody class="list"></tbody>
               </table>
             </div>
           </div>
@@ -245,6 +268,8 @@
 {% endblock %}
 
 {% block footer_js %}
+<script src="{% static 'admin_argon/assets/vendor/datatables.net/js/jquery.dataTables.min.js' %}"></script>
+<script src="{% static 'admin_argon/assets/vendor/datatables.net-bs4/js/dataTables.bootstrap4.min.js' %}"></script>
 <script src="{% static 'select2/select2.min.js' %}"></script>
 <script src="{% static 'multistep-form/script.js' %}"></script>
 <script src="{% static 'js/predicts/predictor.js' %}"></script>

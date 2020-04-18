@@ -158,13 +158,11 @@ def predictor(request):
         regularization = request.POST.get("regularization")
         epsilon = request.POST.get("epsilon")
         existing_dataset = request.POST.get("existing_dataset")
-        dataset_source = request.POST.get("dataset_source")
-        dataset_predict = request.POST.get("dataset_predict")
 
         # convert string input to float
         # to prevent error
-        regularization = float(regularization) if regularization != None else 1.0
-        epsilon = float(epsilon) if epsilon != None else 0.1
+        regularization = float(regularization) if regularization != None and regularization != "" else 1.0
+        epsilon = float(epsilon) if epsilon != None and epsilon != "" else 0.1
 
         response = {}
         if not validate_request(request):
@@ -181,14 +179,25 @@ def predictor(request):
         if new_model != "on":
             model = Prediction.objects.get(pk=existing_model)
 
-            result = svr.load_model(dataframe=training_dataframe,
+            result, city_result, y_true = svr.load_model(dataframe=training_dataframe,
                                     features=Conversion.to_list(Conversion, model.ranked_index),
                                     url=model.dumped_model)
-            print("REGRESSOR RESULT", result, flush=True)
 
             ranked_feature = model.ranked_index.split(",")
             feature_names = dataset_column_names[2:]
-            sorted_feature = [feature_names[int(i)] for i in ranked_feature]
+            sorted_feature = [humanize_feature_name(feature_names[int(i)]) for i in ranked_feature]
+
+            poverty_each_city = []
+            for city, poverty_rate in city_result.items():
+                city = City.objects.get(pk=city)
+                data = {
+                    "city": city.name,
+                    "province": city.province,
+                    "poverty_rate": poverty_rate,
+                    "latitude": city.latitude,
+                    "longitude": city.longitude,
+                }
+                poverty_each_city.append(data)
 
             response["success"] = True
             response["r2"] = model.accuracy_value
@@ -197,6 +206,8 @@ def predictor(request):
             response["epsilon"] = model.epsilon
             response["feature_num"] = model.feature_num
             response["sorted_feature"] = sorted_feature
+            response["result_chart"] = draw_figure(result, y_true)
+            response["result_cities"] = poverty_each_city
             return JsonResponse(response, content_type="application/json")
         else:
             if new_dataset != "on":
@@ -205,7 +216,7 @@ def predictor(request):
                 dataset_source = None
             else:
                 dataset_source = request.FILES['dataset_source']
-                # save_dataset_to_db(dataset_source)
+                save_dataset_to_db(dataset_source)
                 dataset_data = None
 
             """
@@ -241,29 +252,27 @@ def predictor(request):
                 "epsilon": epsilon,
                 "accuracy_value": best_score[0],
                 "error_value": best_score[1],
-                "pred_result": best_pred,
+                "pred_result": best_pred[1],
                 "feature_num": best_score[2],
                 "ranked_index": ranked_index,
                 "dumped_model": full_model_file_path,
             }
             # save model
-            # save_model_to_db(data_for_input)
+            save_model_to_db(data_for_input)
 
-            print("NEW REGRESSOR RESULT", result, flush=True)
-
-            """
-            MUST RESPONSE:
-            best r2
-            best rmse
-            regularization val
-            epsilon val
-            feature num
-            best to worst feature
-            new model
-            new dataset
-            """
             feature_names = dataset_column_names[2:]
-            sorted_feature = [feature_names[i] for i in best_score[4]]
+            sorted_feature = [humanize_feature_name(feature_names[i]) for i in best_score[4]]
+            poverty_each_city = []
+            for city, result in best_pred[1].items():
+                city = City.objects.get(pk=city)
+                data = {
+                    "city": city.name,
+                    "province": city.province,
+                    "poverty_rate": result,
+                    "latitude": city.latitude,
+                    "longitude": city.longitude,
+                }
+                poverty_each_city.append(data)
 
             response["success"] = True
             response["r2"] = best_score[0]
@@ -272,11 +281,24 @@ def predictor(request):
             response["epsilon"] = epsilon
             response["feature_num"] = best_score[2]
             response["sorted_feature"] = sorted_feature
+            response["result_chart"] = draw_figure(best_pred[0], y_true)
+            response["result_cities"] = poverty_each_city
             return JsonResponse(response, content_type="application/json")
 
 
+def humanize_feature_name(feature):
+    aggregation = {
+        "avg": "average of",
+        "sum": "sum of",
+        "std": "standard deviation of",
+    }
+    s = feature.split("_")
+    obj = s[2:]
+    result = s[0].replace(s[0], aggregation[s[0]]) + " " + " ".join(obj) + " " + s[1]
+    return result
+
+
 def draw_figure(predicted, real):
-    print(type(predicted), type(real), flush=True)
     if len(real) < 1:
         return None
 
@@ -377,3 +399,22 @@ def prediction_result(request, prediction_id):
 
 def mapping(request):
     return render(request, 'predicts/mapping.html', {})
+
+
+def predict_list(request):
+    if request.method == "GET":
+        predictions = Prediction.objects.values_list("id",
+                                                     "name",
+                                                     "feature_selection",
+                                                     "regularization",
+                                                     "epsilon",
+                                                     "accuracy_value",
+                                                     "error_value")
+
+        prediction_data = [dict(zip(prediction_column_names, data)) for data in predictions]
+        context = {
+            'table_header': prediction_result_table_header,
+            'prediction_data': prediction_data,
+        }
+
+        return render(request, 'predicts/list.html', context=context)

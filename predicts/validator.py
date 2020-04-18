@@ -15,7 +15,7 @@ def validate_request(request):
     dataset_predict = request.POST.get("dataset_predict")
 
     if new_model == "on":
-        if feature_selection == "" or regularization == "" or epsilon == "":
+        if feature_selection == "":
             return False
 
         if new_dataset == "on":
