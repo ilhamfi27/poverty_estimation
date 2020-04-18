@@ -117,7 +117,7 @@ function formSubmit() {
             scrollTop: $("#js-result-panels").offset().top
           }, 600);
         } else {
-          console.log("ERROR");
+          showErrorModal(["Failed to predict due to incompatible data input"])
         }
       },
       error: function (err) {
@@ -137,18 +137,8 @@ function populateTable(data) {
       item.province,
       item.poverty_rate,
     ]).draw();
-    // item.number = number;
     number++;
   });
-  // myDataTable.dataTable({
-  //   "aaData": data,
-  //   "columns": [
-  //     { "data": "number" },
-  //     { "data": "city" },
-  //     { "data": "province" },
-  //     { "data": "poverty_rate" }
-  //   ]
-  // });
 }
 
 function useMyOwnDataset() {
