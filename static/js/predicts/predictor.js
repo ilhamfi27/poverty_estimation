@@ -37,7 +37,6 @@ $(document).ready(function () {
 
   mymap = L.map('poverty-mapping').setView([-7.166, 109.852], 7);
   mapLayer(mymap);
-  mappingInit(mymap);
 });
 
 function mapLayer(mymap) {
@@ -89,12 +88,12 @@ function cloropathLayer(map, mapping) {
   // get color depending on population density value
   function getColor(d) {
     return d > 1000 ? '#800026' :
-      d > 500 ? '#BD0026' :
-        d > 200 ? '#E31A1C' :
-          d > 100 ? '#FC4E2A' :
-            d > 50 ? '#FD8D3C' :
-              d > 20 ? '#FEB24C' :
-                d > 10 ? '#FED976' :
+      d > 18 ? '#BD0026' :
+        d > 15 ? '#E31A1C' :
+          d > 12 ? '#FC4E2A' :
+            d > 9 ? '#FD8D3C' :
+              d > 6 ? '#FEB24C' :
+                d > 3 ? '#FED976' :
                   '#FFEDA0';
   }
 
@@ -105,7 +104,7 @@ function cloropathLayer(map, mapping) {
       color: 'white',
       dashArray: '3',
       fillOpacity: 0.7,
-      fillColor: getColor(feature.properties.density)
+      fillColor: getColor(feature.properties.poverty_rate)
     };
   }
 
@@ -161,7 +160,7 @@ function cloropathLayer(map, mapping) {
   legend.onAdd = function (map) {
 
     var div = L.DomUtil.create('div', 'info legend'),
-      grades = [0, 10, 20, 50, 100, 200, 500, 1000],
+      grades = [3, 6, 9, 12, 15, 18],
       labels = [],
       from, to;
 
@@ -228,41 +227,59 @@ function formSubmit() {
       processData: false,
       success: function (res) {
         console.log(res);
-        if (res.success) {
-          $("#js-r2").text(res.r2);
-          $("#js-rmse").text(res.rmse);
-          $("#js-regularization").text(res.regularization);
-          $("#js-epsilon").text(res.epsilon);
-          $("#js-feature_num").text(res.feature_num);
-          $("#js-result_chart").prop("src", `data:image/png;base64,${res.result_chart}`);
-
-          $("#js-sorted_feature ol").remove();
-          const list = document.createElement('ol');
-
-          res.sorted_feature.forEach(item => {
-            const listItem = document.createElement('li');
-
-            listItem.innerHTML = `${item}`;
-            list.appendChild(listItem);
-          });
-
-          $("#js-sorted_feature").append(list);
-          populateTable(res.result_cities);
-          setMarkers(res.result_cities, mymap);
-
-          // scroll to form
-          $('html, body').animate({
-            scrollTop: $("#js-result-panels").offset().top
-          }, 600);
-        } else {
-          showErrorModal(["Failed to predict due to incompatible data input"])
-        }
+        processAjaxResponse(res);
       },
       error: function (err) {
         console.log(err);
       }
     });
   });
+}
+
+function processAjaxResponse(res) {
+  if (res.success) {
+    $("#js-r2").text(res.r2);
+    $("#js-rmse").text(res.rmse);
+    $("#js-regularization").text(res.regularization);
+    $("#js-epsilon").text(res.epsilon);
+    $("#js-feature_num").text(res.feature_num);
+
+    $("#js-sorted_feature ol").remove();
+    const list = document.createElement('ol');
+
+    res.sorted_feature.forEach(item => {
+      const listItem = document.createElement('li');
+
+      listItem.innerHTML = `${item}`;
+      list.appendChild(listItem);
+    });
+
+    $("#js-sorted_feature").append(list);
+    populateTable(res.result_cities);
+    populateChartResponse(res);
+    scrollPageAfterForm();
+    
+    cloropathLayer(mymap, res.region_geojson);
+
+  } else {
+    showErrorModal(["Failed to predict due to incompatible data input"])
+  }
+}
+
+function populateChartResponse(res) {
+  if (!res.new_model) {
+    $("#js-chart-box").css({ 'display': 'block', });
+    $("#js-result_chart").prop("src", `data:image/png;base64,${res.result_chart}`);
+  } else {
+    $("#js-chart-box").css({ 'display': 'none', });
+  }
+}
+
+function scrollPageAfterForm() {
+  // scroll to form
+  $('html, body').animate({
+    scrollTop: $("#js-result-panels").offset().top
+  }, 600);
 }
 
 function populateTable(data) {

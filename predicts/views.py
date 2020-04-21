@@ -1,6 +1,6 @@
 from django.http import JsonResponse
 from django.shortcuts import render, redirect
-from datasets.models import Dataset, City, DatasetProfile
+from datasets.models import Dataset, City, DatasetProfile, CityGeography
 from django.forms.models import model_to_dict
 from .models import Prediction, PredictionResult
 from .validator import validate_request
@@ -189,8 +189,10 @@ def predictor(request):
             sorted_feature = [humanize_feature_name(feature_names[int(i)]) for i in ranked_feature]
 
             poverty_each_city = []
+            geojson_features = []
             for city, poverty_rate in city_result.items():
                 city = City.objects.get(pk=city)
+                geojson = CityGeography.objects.filter(city=city).first()
                 data = {
                     "city": city.name,
                     "province": city.province,
@@ -200,7 +202,25 @@ def predictor(request):
                 }
                 poverty_each_city.append(data)
 
+                if geojson is not None:
+                    feature = {
+                        "type": "Feature",
+                        "properties": {
+                            "region": geojson.city.name,
+                            "province": geojson.city.province,
+                            "poverty_rate": poverty_rate,
+                        },
+                        "geometry": json.loads(geojson.area_geometry)
+                    }
+                    geojson_features.append(feature)
+
+            region_geojson = {
+                "type": "FeatureCollection",
+                "features": geojson_features
+            }
+
             response["success"] = True
+            response["new_model"] = True
             response["r2"] = model.accuracy_value
             response["rmse"] = model.error_value
             response["regularization"] = model.regularization
@@ -209,6 +229,7 @@ def predictor(request):
             response["sorted_feature"] = sorted_feature
             response["result_chart"] = draw_figure(result, y_true)
             response["result_cities"] = poverty_each_city
+            response["region_geojson"] = region_geojson
             return JsonResponse(response, content_type="application/json")
         else:
             if new_dataset != "on":
@@ -263,9 +284,12 @@ def predictor(request):
 
             feature_names = dataset_column_names[2:]
             sorted_feature = [humanize_feature_name(feature_names[i]) for i in best_score[4]]
+
             poverty_each_city = []
+            geojson_features = []
             for city, result in best_pred[1].items():
                 city = City.objects.get(pk=city)
+                geojson = CityGeography.objects.filter(city=city).first()
                 data = {
                     "city": city.name,
                     "province": city.province,
@@ -275,7 +299,25 @@ def predictor(request):
                 }
                 poverty_each_city.append(data)
 
+                if geojson is not None:
+                    feature = {
+                        "type": "Feature",
+                        "properties": {
+                            "region": geojson.city.name,
+                            "province": geojson.city.province,
+                            "poverty_rate": result,
+                        },
+                        "geometry": json.loads(geojson.area_geometry)
+                    }
+                    geojson_features.append(feature)
+
+            region_geojson = {
+                "type": "FeatureCollection",
+                "features": geojson_features
+            }
+
             response["success"] = True
+            response["new_model"] = True
             response["r2"] = best_score[0]
             response["rmse"] = best_score[1]
             response["regularization"] = regularization
@@ -284,6 +326,7 @@ def predictor(request):
             response["sorted_feature"] = sorted_feature
             response["result_chart"] = draw_figure(best_pred[0], y_true)
             response["result_cities"] = poverty_each_city
+            response["region_geojson"] = region_geojson
             return JsonResponse(response, content_type="application/json")
 
 
