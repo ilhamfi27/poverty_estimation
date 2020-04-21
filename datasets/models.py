@@ -124,3 +124,13 @@ class Dataset(models.Model):
 
     class Meta:
         db_table = 'ecommerce_transactions'
+
+class CityGeography(models.Model):
+    city = models.ForeignKey(City, on_delete=models.CASCADE, blank=True, null=True, default=None)
+    province = models.CharField(max_length=15)
+    region_name = models.CharField(max_length=30)
+    region_type = models.CharField(max_length=10)
+    area_geometry = models.TextField(default="")
+
+    class Meta:
+        db_table = 'city_geography'

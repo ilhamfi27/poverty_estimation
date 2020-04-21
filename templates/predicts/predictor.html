@@ -11,6 +11,34 @@
   #poverty-mapping {
     height: 350px;
   }
+
+  .info {
+    padding: 6px 8px;
+    font: 14px/16px Arial, Helvetica, sans-serif;
+    background: white;
+    background: rgba(255, 255, 255, 0.8);
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+    border-radius: 5px;
+  }
+
+  .info h4 {
+    margin: 0 0 5px;
+    color: #777;
+  }
+
+  .legend {
+    text-align: left;
+    line-height: 18px;
+    color: #555;
+  }
+
+  .legend i {
+    width: 18px;
+    height: 18px;
+    float: left;
+    margin-right: 8px;
+    opacity: 0.7;
+  }
 </style>
 {% endblock %}
 
@@ -155,7 +183,7 @@
     </div>
   </div>
   <div class="row" id="js-result-panels">
-    <div class="col-xl-8">
+    <div class="col-xl-12">
       <div class="card">
         <div class="card-header bg-transparent">
           <div class="row align-items-center">
@@ -167,23 +195,6 @@
         </div>
         <div class="card-body">
           <div id="poverty-mapping"></div>
-        </div>
-      </div>
-    </div>
-    <div class="col-xl-4">
-      <div class="card">
-        <div class="card-header">
-          <div class="row align-items-center">
-            <div class="col">
-              <h6 class="text-light text-uppercase ls-1 mb-1"></h6>
-              <h5 class="h3 mb-0">Result Chart</h5>
-            </div>
-            <div class="col">
-            </div>
-          </div>
-        </div>
-        <div class="card-body">
-          <img src="" alt="" id="js-result_chart" class="img-fluid">
         </div>
       </div>
     </div>
@@ -236,6 +247,21 @@
         <div class="card-header">
           <div class="row align-items-center">
             <div class="col">
+              <h6 class="text-light text-uppercase ls-1 mb-1"></h6>
+              <h5 class="h3 mb-0">Result Chart</h5>
+            </div>
+            <div class="col">
+            </div>
+          </div>
+        </div>
+        <div class="card-body">
+          <img src="" alt="" id="js-result_chart" class="img-fluid">
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header">
+          <div class="row align-items-center">
+            <div class="col">
               <h6 class="text-light text-uppercase ls-1 mb-1">Cities Poverty Rate</h6>
               <h5 class="h3 mb-0"></h5>
             </div>
@@ -273,4 +299,5 @@
 <script src="{% static 'select2/select2.min.js' %}"></script>
 <script src="{% static 'multistep-form/script.js' %}"></script>
 <script src="{% static 'js/predicts/predictor.js' %}"></script>
+<script src="{% static 'js/predicts/javanese_regions.js' %}"></script>
 {% endblock %}

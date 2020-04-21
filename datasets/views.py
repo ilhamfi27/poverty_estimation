@@ -1,9 +1,10 @@
 from django.http import JsonResponse
 from django.shortcuts import render, redirect
 from django.forms.models import model_to_dict
-from .models import Dataset, City, DatasetProfile
+from .models import Dataset, City, DatasetProfile, CityGeography
 import numpy as np
 import pandas as pd
+import json
 
 dataset_column_names = [
     'city_id', 'BPS_poverty_rate', 'sum_price_car', 'avg_price_car', 'std_price_car', 'sum_sold_car',
@@ -158,3 +159,34 @@ def city_transaction(data):
         name=data['name'], province=data['province'],
         defaults=data,
     )
+
+
+# ajax request handler
+def geojson(request):
+    if request.method == 'GET':
+
+        features = []
+        geography = CityGeography.objects.all()
+        for g in geography:
+            geometry = json.loads(g.area_geometry)
+            feature = {
+                "type": "Feature",
+                "properties": {
+                    "region": g.city.name,
+                    "province": g.city.province,
+                    "poverty_rate": 0,
+                },
+                "geometry": geometry
+            }
+            features.append(feature)
+
+        region_geojson = {
+            "type": "FeatureCollection",
+            "features": features
+        }
+
+        context = {}
+        context['success'] = True
+        context['data'] = region_geojson
+
+        return JsonResponse(context, content_type="application/json")

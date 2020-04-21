@@ -179,9 +179,10 @@ def predictor(request):
         if new_model != "on":
             model = Prediction.objects.get(pk=existing_model)
 
-            result, city_result, y_true = svr.load_model(dataframe=training_dataframe,
-                                    features=Conversion.to_list(Conversion, model.ranked_index),
-                                    url=model.dumped_model)
+            result, city_result, y_true = svr.load_model(
+                                dataframe=training_dataframe,
+                                features=Conversion.to_list(Conversion, model.ranked_index),
+                                url=model.dumped_model)
 
             ranked_feature = model.ranked_index.split(",")
             feature_names = dataset_column_names[2:]
