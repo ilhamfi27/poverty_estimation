@@ -27,6 +27,9 @@ let ownDataset = false;
 let ownModel = false;
 let mymap = null;
 let myDataTable = null;
+let info = null;
+let legend = null;
+let geojson = null;
 
 $(document).ready(function () {
   useMyOwnDataset();
@@ -37,6 +40,9 @@ $(document).ready(function () {
 
   mymap = L.map('poverty-mapping').setView([-7.166, 109.852], 7);
   mapLayer(mymap);
+  choroplathInfoInit(mymap);
+  choroplathLegend(mymap);
+  mappingInit(mymap);
 });
 
 function mapLayer(mymap) {
@@ -66,10 +72,67 @@ function mappingInit(mymap) {
   })
 }
 
-function cloropathLayer(map, mapping) {
-  // control that shows state info on hover
-  var info = L.control();
+// get color depending on population density value
+function getColor(d) {
+  return d > 1000 ? '#800026' :
+    d > 18 ? '#BD0026' :
+      d > 15 ? '#E31A1C' :
+        d > 12 ? '#FC4E2A' :
+          d > 9 ? '#FD8D3C' :
+            d > 6 ? '#FEB24C' :
+              d > 3 ? '#FED976' :
+                '#FFEDA0';
+}
 
+function style(feature) {
+  return {
+    weight: 2,
+    opacity: 1,
+    color: 'white',
+    dashArray: '3',
+    fillOpacity: 0.7,
+    fillColor: getColor(feature.properties.poverty_rate)
+  };
+}
+
+function highlightFeature(e) {
+  var layer = e.target;
+
+  layer.setStyle({
+    weight: 5,
+    color: '#666',
+    dashArray: '',
+    fillOpacity: 0.7
+  });
+
+  if (!L.Browser.ie && !L.Browser.opera && !L.Browser.edge) {
+    layer.bringToFront();
+  }
+
+  info.update(layer.feature.properties);
+}
+
+function resetHighlight(e) {
+  geojson.resetStyle(e.target);
+  info.update();
+}
+
+function zoomToFeature(e) {
+  mymap.fitBounds(e.target.getBounds());
+}
+
+function onEachFeature(feature, layer) {
+  layer.on({
+    mouseover: highlightFeature,
+    mouseout: resetHighlight,
+    click: zoomToFeature
+  });
+}
+
+function choroplathInfoInit(map) {
+  // control that shows state info on hover
+  info = L.control();
+  
   info.onAdd = function (map) {
     this._div = L.DomUtil.create('div', 'info');
     this.update();
@@ -83,67 +146,9 @@ function cloropathLayer(map, mapping) {
   };
 
   info.addTo(map);
+}
 
-
-  // get color depending on population density value
-  function getColor(d) {
-    return d > 1000 ? '#800026' :
-      d > 18 ? '#BD0026' :
-        d > 15 ? '#E31A1C' :
-          d > 12 ? '#FC4E2A' :
-            d > 9 ? '#FD8D3C' :
-              d > 6 ? '#FEB24C' :
-                d > 3 ? '#FED976' :
-                  '#FFEDA0';
-  }
-
-  function style(feature) {
-    return {
-      weight: 2,
-      opacity: 1,
-      color: 'white',
-      dashArray: '3',
-      fillOpacity: 0.7,
-      fillColor: getColor(feature.properties.poverty_rate)
-    };
-  }
-
-  function highlightFeature(e) {
-    var layer = e.target;
-
-    layer.setStyle({
-      weight: 5,
-      color: '#666',
-      dashArray: '',
-      fillOpacity: 0.7
-    });
-
-    if (!L.Browser.ie && !L.Browser.opera && !L.Browser.edge) {
-      layer.bringToFront();
-    }
-
-    info.update(layer.feature.properties);
-  }
-
-  var geojson;
-
-  function resetHighlight(e) {
-    geojson.resetStyle(e.target);
-    info.update();
-  }
-
-  function zoomToFeature(e) {
-    map.fitBounds(e.target.getBounds());
-  }
-
-  function onEachFeature(feature, layer) {
-    layer.on({
-      mouseover: highlightFeature,
-      mouseout: resetHighlight,
-      click: zoomToFeature
-    });
-  }
-
+function cloropathLayer(map, mapping) {
   geojson = L.geoJson(mapping, {
     style: style,
     onEachFeature: onEachFeature
@@ -151,9 +156,10 @@ function cloropathLayer(map, mapping) {
 
   map.attributionControl.addAttribution(
     'Population data &copy; <a href="http://census.gov/">US Census Bureau</a>');
+}
 
-
-  var legend = L.control({
+function choroplathLegend(map) {
+  legend = L.control({
     position: 'bottomright'
   });
 
