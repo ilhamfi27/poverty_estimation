@@ -35,6 +35,8 @@ $(document).ready(function () {
   useMyOwnDataset();
   createNewModel();
   newModelOrExisting();
+  getModelDetail();
+  getDatasetDetail();
   formSubmit();
   dataTableInit();
 
@@ -132,7 +134,7 @@ function onEachFeature(feature, layer) {
 function choroplathInfoInit(map) {
   // control that shows state info on hover
   info = L.control();
-  
+
   info.onAdd = function (map) {
     this._div = L.DomUtil.create('div', 'info');
     this.update();
@@ -264,7 +266,7 @@ function processAjaxResponse(res) {
     populateTable(res.result_cities);
     populateChartResponse(res);
     scrollPageAfterForm();
-    
+
     cloropathLayer(mymap, res.region_geojson);
 
   } else {
@@ -273,7 +275,7 @@ function processAjaxResponse(res) {
 }
 
 function populateChartResponse(res) {
-  if (!res.new_model) {
+  if (res.new_model) {
     $("#js-chart-box").css({ 'display': 'block', });
     $("#js-result_chart").prop("src", `data:image/png;base64,${res.result_chart}`);
   } else {
@@ -308,10 +310,12 @@ function useMyOwnDataset() {
       availableDatasetSelect.prop("disabled", true);
       newDatasetSourceFile.prop("disabled", false);
       ownDataset = true;
+      $("#js-div-dataset-detail").css({"display": "none"});
     } else if ($(this).prop("checked") == false) {
       availableDatasetSelect.prop("disabled", false);
       newDatasetSourceFile.prop("disabled", true);
       ownDataset = false;
+      $("#js-div-dataset-detail").css({"display": "block"});
     }
   });
 }
@@ -324,12 +328,14 @@ function createNewModel() {
       regularizationInput.prop("disabled", false);
       epsilonInput.prop("disabled", false);
       ownModel = true;
+      $("#js-div-model-detail").css({"display": "none"});
     } else {
       availableModel.prop("disabled", false);
       featureSelection.prop("disabled", true);
       regularizationInput.prop("disabled", true);
       epsilonInput.prop("disabled", true);
       ownModel = false;
+      $("#js-div-model-detail").css({"display": "block"});
     }
   });
 }
@@ -338,6 +344,54 @@ function newModelOrExisting() {
   availableModel.on("change", function () {
     if (availableModel.val() != "") {
       // TODO
+    }
+  });
+}
+
+function getModelDetail() {
+  availableModel.change(function (e) {
+    const modelId = $(this).val();
+    if (modelId != "" || modelId != null || modelId != undefined) {
+      $.ajax({
+        url: appUrl + "/predicts/api/get_model_detail/?id=" + modelId,
+        method: 'GET',
+        success: function (res) {
+          const response = res.data;
+
+          $("#js-div-model-detail").css({"display": "block"});
+          $("#js-model-fs-used").text(response.feature_selection);
+          $("#js-model-regularization-parameter").text(response.regularization);
+          $("#js-model-epsilon-parameter").text(response.epsilon);
+          $("#js-model-r2-value").text(response.accuracy_value);
+          $("#js-model-rmse-value").text(response.error_value);
+          $("#js-model-total-features-used").text(response.feature_num);
+        },
+        error: function (e) {
+          console.log(e);
+        }
+      })
+    }
+  });
+}
+
+function getDatasetDetail() {
+  availableDatasetSelect.change(function (e) {
+    const datasetId = $(this).val();
+    if (datasetId != "" || datasetId != null || datasetId != undefined) {
+      $.ajax({
+        url: appUrl + "/datasets/api/get_dataset_detail/?id=" + datasetId,
+        method: 'GET',
+        success: function (res) {
+          const response = res.data;
+
+          $("#js-div-dataset-detail").css({"display": "block"});
+          $("#js-dataset-total-rows").text(response.total_rows);
+          $("#js-dataset-valid-date").text(response.valid_date);
+        },
+        error: function (e) {
+          console.log(e);
+        }
+      })
     }
   });
 }

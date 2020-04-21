@@ -10,5 +10,6 @@ urlpatterns = [
     path('city_insert/', views.city_insert, name='city_insert'),
     path('city_delete/', views.city_delete, name='city_delete'),
     path('geojson/', views.geojson, name='geojson'),
+    path('api/get_dataset_detail/', views.get_dataset_detail, name='get_dataset_detail'),
 ]
 

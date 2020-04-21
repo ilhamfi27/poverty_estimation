@@ -190,3 +190,21 @@ def geojson(request):
         context['data'] = region_geojson
 
         return JsonResponse(context, content_type="application/json")
+
+
+# ajax request handler
+def get_dataset_detail(request):
+    if request.method == "GET":
+        profile_id = request.GET.get('id')
+        dataset = DatasetProfile.objects.filter(pk=profile_id).first()
+        dataset_response = {
+            "id": dataset.id,
+            "total_rows": dataset.total_row,
+            "valid_date": dataset.valid_date,
+        }
+
+        context = {}
+        context['success'] = True
+        context['data'] = dataset_response
+
+        return JsonResponse(context, content_type="application/json")

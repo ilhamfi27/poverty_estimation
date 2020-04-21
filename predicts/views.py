@@ -220,7 +220,7 @@ def predictor(request):
             }
 
             response["success"] = True
-            response["new_model"] = True
+            response["new_model"] = False
             response["r2"] = model.accuracy_value
             response["rmse"] = model.error_value
             response["regularization"] = model.regularization
@@ -462,3 +462,17 @@ def predict_list(request):
         }
 
         return render(request, 'predicts/list.html', context=context)
+
+
+# ajax request handler
+def get_model_detail(request):
+    if request.method == "GET":
+        model_id = request.GET.get('id')
+        prediction = Prediction.objects.filter(pk=model_id).first()
+        prediction_response = model_to_dict(prediction)
+
+        context = {}
+        context['success'] = True
+        context['data'] = prediction_response
+
+        return JsonResponse(context, content_type="application/json")
