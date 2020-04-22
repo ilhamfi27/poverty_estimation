@@ -348,6 +348,19 @@ function newModelOrExisting() {
   });
 }
 
+function panelHeightChanged() {
+  /**
+   * TODO
+   * fix height change bug
+   */
+  const activePanel = getActivePanel();
+  const activePanelHeight = activePanel.offsetHeight;
+  const modeldetailHeight = $("#js-div-model-detail").height();
+  console.log(activePanelHeight + modeldetailHeight);
+  
+  $("#js-form-container").css({"height": (activePanelHeight + modeldetailHeight) + "px"})
+}
+
 function getModelDetail() {
   availableModel.change(function (e) {
     const modelId = $(this).val();
@@ -369,8 +382,9 @@ function getModelDetail() {
         error: function (e) {
           console.log(e);
         }
-      })
+      });
     }
+    panelHeightChanged();
   });
 }
 

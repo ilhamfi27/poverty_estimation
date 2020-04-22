@@ -161,10 +161,10 @@ DOMstrings.stepsForm.addEventListener('click', e => {
 });
 
 //SETTING PROPER FORM HEIGHT ONLOAD
-// window.addEventListener('load', setFormHeight, false);
+window.addEventListener('load', setFormHeight, false);
 
 //SETTING PROPER FORM HEIGHT ONRESIZE
-// window.addEventListener('resize', setFormHeight, false);
+window.addEventListener('resize', setFormHeight, false);
 
 //changing animation via animation select !!!YOU DON'T NEED THIS CODE (if you want to change animation type, just change form panels data-attr)
 
@@ -175,10 +175,10 @@ const setAnimationType = newType => {
 };
 
 //selector onchange - changing animation
-const animationSelect = document.querySelector('.pick-animation__select');
+// const animationSelect = document.querySelector('.pick-animation__select');
 
-animationSelect.addEventListener('change', () => {
-  const newAnimationType = animationSelect.value;
+// animationSelect.addEventListener('change', () => {
+//   const newAnimationType = animationSelect.value;
 
-  setAnimationType(newAnimationType);
-});
+//   setAnimationType(newAnimationType);
+// });
