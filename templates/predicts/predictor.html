@@ -76,11 +76,20 @@
                     <h3 class="multisteps-form__title">Create or Choose ML Model</h3>
                     <div class="multisteps-form__content">
                       <div class="custom-control custom-checkbox mb-4">
-                        <input type="checkbox" class="custom-control-input" id="use-default-model" name="default_model" checked>
-                        <label class="custom-control-label" for="use-default-model">Use Default Model</label>
+                        <input type="checkbox" class="custom-control-input" id="use-default-model" name="default_model"
+                          checked>
+                        <label class="custom-control-label" for="use-default-model">
+                          Use Default Model
+                          <i class="fas fa-info-circle" data-toggle="tooltip" data-placement="right"
+                            title="Use best machine learning model to predict dataset"></i>
+                        </label>
                       </div>
                       <div class="form-group">
-                        <label for="available-model" class="form-control-label">Available Model</label>
+                        <label for="available-model" class="form-control-label">
+                          Available Model
+                          <i class="fas fa-info-circle" data-toggle="tooltip" data-placement="right"
+                            title="Use available model from conducted experiment"></i>
+                        </label>
                         <select name="existing_model" class="form-control" id="available-model" disabled>
                           <option value="">Select Available Model</option>
 
@@ -122,11 +131,20 @@
                         </div>
                       </div>
                       <div class="custom-control custom-checkbox mb-4">
-                        <input type="checkbox" class="custom-control-input" id="use-my-own-model" name="new_model" disabled>
-                        <label class="custom-control-label" for="use-my-own-model">Create New Model</label>
+                        <input type="checkbox" class="custom-control-input" id="use-my-own-model" name="new_model"
+                          disabled>
+                        <label class="custom-control-label" for="use-my-own-model">
+                          Create New Model
+                          <i class="fas fa-info-circle" data-toggle="tooltip" data-placement="right"
+                            title="Try to experiment with new model"></i>
+                        </label>
                       </div>
                       <div class="form-group">
-                        <label for="feature-selection" class="form-control-label">Feature Selection Algorithm</label>
+                        <label for="feature-selection" class="form-control-label">
+                          Feature Selection Algorithm
+                          <i class="fas fa-info-circle" data-toggle="tooltip" data-placement="right"
+                            title="Use feature selection to select better features to be predicted"></i>
+                        </label>
                         <select name="feature_selection" class="form-control" id="feature-selection" disabled>
                           <option value="f_score">F-Score</option>
                           <option value="chi_square">Chi-square</option>
@@ -134,12 +152,20 @@
                         </select>
                       </div>
                       <div class="form-group">
-                        <label for="regularization-input" class="form-control-label">Regularization (C)</label>
+                        <label for="regularization-input" class="form-control-label">
+                          Regularization (C)
+                          <i class="fas fa-info-circle" data-toggle="tooltip" data-placement="right"
+                            title="Hyperparameter for SVR which aim ..."></i>
+                        </label>
                         <input type="number" class="form-control" id="regularization-input" name="regularization"
                           placeholder="Regularization (default 1.0)" step=".01" disabled>
                       </div>
                       <div class="form-group">
-                        <label for="epsilon-input" class="form-control-label">Epsilon</label>
+                        <label for="epsilon-input" class="form-control-label">
+                          Epsilon
+                          <i class="fas fa-info-circle" data-toggle="tooltip" data-placement="right"
+                            title="Hyperparameter for SVR which aim ..."></i>
+                        </label>
                         <input type="number" class="form-control" id="epsilon-input" name="epsilon"
                           placeholder="Epsilon (default 1.0)" step=".01" disabled>
                       </div>
@@ -155,7 +181,11 @@
                     <h3 class="multisteps-form__title">Choose Training Dataset</h3>
                     <div class="multisteps-form__content">
                       <div class="form-group">
-                        <label for="available-dataset" class="form-control-label">Available Dataset</label>
+                        <label for="available-dataset" class="form-control-label">
+                          Available Dataset
+                          <i class="fas fa-info-circle" data-toggle="tooltip" data-placement="right"
+                            title="Available dataset to be used for training"></i>
+                        </label>
                         <select name="existing_dataset" class="form-control" id="available-dataset">
                           <option value="">Select Available Dataset</option>
 
@@ -181,15 +211,30 @@
                       </div>
                       <div class="custom-control custom-checkbox mb-4">
                         <input type="checkbox" class="custom-control-input" id="use-my-own-dataset" name="new_dataset">
-                        <label class="custom-control-label" for="use-my-own-dataset">Use My Own Dataset</label>
+                        <label class="custom-control-label" for="use-my-own-dataset">
+                          Use My Own Dataset
+                          <i class="fas fa-info-circle" data-toggle="tooltip" data-placement="right"
+                            title="Use your own dataset to be used for model training"></i>
+                        </label>
                       </div>
                       <div class="form-group">
-                        <label for="new-dataset-source" class="form-control-label">New Dataset File</label>
+                        <div class="row">
+                          <div class="col">
+                            <h2>Dataset Template</h2>
+                            <p><a href="{% static 'document/template.xlsx' %}" download> Click to Download Template </a>
+                            </p>
+                          </div>
+                        </div>
+                        <label for="new-dataset-source" class="form-control-label">
+                          New Dataset File
+                          <i class="fas fa-info-circle" data-toggle="tooltip" data-placement="right"
+                            title="Select your dataset if you prefer using your own training dataset"></i>
+                        </label>
                         <div class="custom-file">
                           <input type="file" class="custom-file-input" id="new-dataset-source" name="dataset_source"
                             accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel"
                             disabled>
-                          <label class="custom-file-label" for="customFileLang">Select file</label>
+                          <label class="custom-file-label" for="customFileLang"></label>
                         </div>
                       </div>
                     </div>
@@ -205,11 +250,22 @@
                     <h3 class="multisteps-form__title">Predict Dataset</h3>
                     <div class="multisteps-form__content">
                       <div class="form-group">
-                        <label for="dataset-predict" class="form-control-label">Dataset File</label>
+                        <div class="row">
+                          <div class="col">
+                            <h2>Dataset Template</h2>
+                            <p><a href="{% static 'document/template.xlsx' %}" download> Click to Download Template </a>
+                            </p>
+                          </div>
+                        </div>
+                        <label for="dataset-predict" class="form-control-label">
+                          Dataset File
+                          <i class="fas fa-info-circle" data-toggle="tooltip" data-placement="right"
+                            title="Select e-commerce dataset to be predict by selected or trained model"></i>
+                        </label>
                         <div class="custom-file">
                           <input type="file" class="custom-file-input" id="dataset-predict" name='dataset_predict'
                             accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel">
-                          <label class="custom-file-label" for="customFileLang">Select file</label>
+                          <label class="custom-file-label" for="customFileLang"></label>
                         </div>
                       </div>
                     </div>
@@ -253,6 +309,10 @@
               <h5 class="h3 mb-0">Model Result Detail</h5>
             </div>
             <div class="col">
+              <button type="button" class="btn btn-primary btn-sm float-right" id="js-save-model-button"
+                data-toggle="tooltip" data-placement="top" title="Save the new model">
+                <i class="fas fa-save"></i>
+              </button>
             </div>
           </div>
         </div>

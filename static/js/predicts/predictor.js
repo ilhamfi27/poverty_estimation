@@ -267,6 +267,14 @@ function processAjaxResponse(res) {
       });
   
       $("#js-sorted_feature").append(list);
+    } else {
+      $("#js-r2").text("");
+      $("#js-rmse").text("");
+      $("#js-regularization").text("");
+      $("#js-epsilon").text("");
+      $("#js-feature_num").text("");
+  
+      $("#js-sorted_feature ol").remove();
     }
     populateTable(res.result_cities);
     populateChartResponse(res);
@@ -303,7 +311,7 @@ function populateTable(data) {
       number,
       item.city,
       item.province,
-      item.poverty_rate,
+      item.poverty_rate + " %",
     ]).draw();
     number++;
   });

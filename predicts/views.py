@@ -197,7 +197,6 @@ def predictor(request):
                 16, 40, 4, 17, 41, 5,
             ]
 
-
             result, city_result, y_true = svr.load_model(
                                 dataframe=training_dataframe,
                                 features=best_feature_list,
@@ -211,7 +210,7 @@ def predictor(request):
                 data = {
                     "city": city.name,
                     "province": city.province,
-                    "poverty_rate": poverty_rate,
+                    "poverty_rate": '{0:.4g}'.format(poverty_rate),
                     "latitude": city.latitude,
                     "longitude": city.longitude,
                 }
@@ -223,7 +222,7 @@ def predictor(request):
                         "properties": {
                             "region": geojson.city.name,
                             "province": geojson.city.province,
-                            "poverty_rate": poverty_rate,
+                            "poverty_rate": '{0:.4g}'.format(poverty_rate),
                         },
                         "geometry": json.loads(geojson.area_geometry)
                     }
@@ -301,7 +300,7 @@ def predictor(request):
                     data = {
                         "city": city.name,
                         "province": city.province,
-                        "poverty_rate": result,
+                        "poverty_rate": '{0:.4g}'.format(result),
                         "latitude": city.latitude,
                         "longitude": city.longitude,
                     }
@@ -313,7 +312,7 @@ def predictor(request):
                             "properties": {
                                 "region": geojson.city.name,
                                 "province": geojson.city.province,
-                                "poverty_rate": result,
+                                "poverty_rate": '{0:.4g}'.format(result),
                             },
                             "geometry": json.loads(geojson.area_geometry)
                         }
@@ -357,7 +356,7 @@ def predictor(request):
                     data = {
                         "city": city.name,
                         "province": city.province,
-                        "poverty_rate": poverty_rate,
+                        "poverty_rate": '{0:.4g}'.format(poverty_rate),
                         "latitude": city.latitude,
                         "longitude": city.longitude,
                     }
@@ -369,7 +368,7 @@ def predictor(request):
                             "properties": {
                                 "region": geojson.city.name,
                                 "province": geojson.city.province,
-                                "poverty_rate": poverty_rate,
+                                "poverty_rate": '{0:.4g}'.format(poverty_rate),
                             },
                             "geometry": json.loads(geojson.area_geometry)
                         }
