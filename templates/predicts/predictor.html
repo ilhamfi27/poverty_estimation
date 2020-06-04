@@ -75,9 +75,13 @@
                     data-animation="scaleIn">
                     <h3 class="multisteps-form__title">Create or Choose ML Model</h3>
                     <div class="multisteps-form__content">
+                      <div class="custom-control custom-checkbox mb-4">
+                        <input type="checkbox" class="custom-control-input" id="use-default-model" name="default_model" checked>
+                        <label class="custom-control-label" for="use-default-model">Use Default Model</label>
+                      </div>
                       <div class="form-group">
                         <label for="available-model" class="form-control-label">Available Model</label>
-                        <select name="existing_model" class="form-control" id="available-model">
+                        <select name="existing_model" class="form-control" id="available-model" disabled>
                           <option value="">Select Available Model</option>
 
                           {% for data in prediction_data %}
@@ -118,7 +122,7 @@
                         </div>
                       </div>
                       <div class="custom-control custom-checkbox mb-4">
-                        <input type="checkbox" class="custom-control-input" id="use-my-own-model" name="new_model">
+                        <input type="checkbox" class="custom-control-input" id="use-my-own-model" name="new_model" disabled>
                         <label class="custom-control-label" for="use-my-own-model">Create New Model</label>
                       </div>
                       <div class="form-group">

@@ -134,10 +134,7 @@ def predictor(request):
                                                  "valid_date",
                                                  "total_row")
 
-    print(dataset_profiles, flush=True)
-
     prediction_data = [dict(zip(prediction_column_names, data)) for data in predictions]
-
 
     context = {
         'dataset_column_names': dataset_column_names,
@@ -151,10 +148,16 @@ def predictor(request):
     if request.method == "GET":
         return render(request, 'predicts/predictor.html', context=context)
     elif request.method == "POST":
-        new_model = request.POST.get("new_model")
-        new_dataset = request.POST.get("new_dataset")
+        # checkboxes
+        default_model = True if request.POST.get("default_model") == "on" else False
+        new_model = True if request.POST.get("new_model") == "on" else False
+        new_dataset = True if request.POST.get("new_dataset") == "on" else False
+
+        # selections
         existing_model = request.POST.get("existing_model")
         feature_selection = request.POST.get("feature_selection")
+
+        # normal input
         regularization = request.POST.get("regularization")
         epsilon = request.POST.get("epsilon")
         existing_dataset = request.POST.get("existing_dataset")
@@ -176,17 +179,29 @@ def predictor(request):
         # get model -
         # get dataset testing -
         # predict! -
-        if new_model != "on":
-            model = Prediction.objects.get(pk=existing_model)
+        if default_model:
+            # get full default file path
+            SITE_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+            full_model_file_path = SITE_ROOT + "/svr_best.sav"
+
+            best_feature_list = [
+                36, 63, 60, 48, 57, 54, 51, 6, 9, 66,
+                18, 15, 69, 38, 3, 13, 0, 24, 21, 27,
+                33, 30, 42, 45, 87, 72, 84, 14, 75, 12,
+                93, 39, 61, 65, 62, 90, 86, 89, 50, 49,
+                71, 52, 85, 78, 44, 81, 64, 37, 74, 68,
+                2, 67, 73, 47, 1, 20, 53, 25, 88, 59,
+                70, 26, 31, 34, 8, 79, 95, 82, 56, 23,
+                28, 11, 94, 76, 32, 43, 83, 55, 58, 10,
+                92, 77, 91, 80, 29, 46, 19, 7, 35, 22,
+                16, 40, 4, 17, 41, 5,
+            ]
+
 
             result, city_result, y_true = svr.load_model(
                                 dataframe=training_dataframe,
-                                features=Conversion.to_list(Conversion, model.ranked_index),
-                                url=model.dumped_model)
-
-            ranked_feature = model.ranked_index.split(",")
-            feature_names = dataset_column_names[2:]
-            sorted_feature = [humanize_feature_name(feature_names[int(i)]) for i in ranked_feature]
+                                features=best_feature_list,
+                                url=full_model_file_path)
 
             poverty_each_city = []
             geojson_features = []
@@ -221,113 +236,163 @@ def predictor(request):
 
             response["success"] = True
             response["new_model"] = False
-            response["r2"] = model.accuracy_value
-            response["rmse"] = model.error_value
-            response["regularization"] = model.regularization
-            response["epsilon"] = model.epsilon
-            response["feature_num"] = model.feature_num
-            response["sorted_feature"] = sorted_feature
+            response["best_model"] = True
             response["result_chart"] = draw_figure(result, y_true)
             response["result_cities"] = poverty_each_city
             response["region_geojson"] = region_geojson
             return JsonResponse(response, content_type="application/json")
         else:
-            if new_dataset != "on":
-                dataset_profile = DatasetProfile.objects.get(pk=existing_dataset)
-                dataset_data = Dataset.objects.filter(profile=dataset_profile)
-                dataset_source = None
-            else:
-                dataset_source = request.FILES['dataset_source']
-                save_dataset_to_db(dataset_source)
+            if new_model:
                 dataset_data = None
+                dataset_source = None
+                if new_dataset:
+                    dataset_source = request.FILES['dataset_source']
+                    # save_dataset_to_db(dataset_source)
+                else:
+                    dataset_profile = DatasetProfile.objects.get(pk=existing_dataset)
+                    dataset_data = Dataset.objects.filter(profile=dataset_profile)
 
-            """
-            1. best prediction => hasil prediksi poverty rate (dictionary, key => city_id)
-            2. detail => detail best score (array)
-                .best_score => r2
-                .lowest_score => rmse
-                .jumlah fitur dengan terbaik
-                .model terbaik
-                .ranked index
-            3. result => detail hasil r2 dari 10 fitur hingga 96 fitur (array)
-                -> [fitur, r2, rmse]
-            4. hasil percobaan prediksi per 10 fitur (array)
-            5. actual poverty rate
-            6. filename
-            """
-            best_pred, best_score, result, ten_column_predictions, y_true, full_model_file_path = \
-                svr.predict(dataset=dataset_data, dataframe=dataset_source, fs_algorithm=feature_selection,
-                            C=regularization, epsilon=epsilon)
+                """
+                proses training sekaligus prediksi
+                1. best prediction => hasil prediksi poverty rate (dictionary, key => city_id)
+                2. detail => detail best score (array)
+                    .best_score => r2
+                    .lowest_score => rmse
+                    .jumlah fitur dengan terbaik
+                    .model terbaik
+                    .ranked index
+                3. result => detail hasil r2 dari 10 fitur hingga 96 fitur (array)
+                    -> [fitur, r2, rmse]
+                4. hasil percobaan prediksi per 10 fitur (array)
+                5. actual poverty rate
+                6. filename
+                """
+                best_pred, best_score, result, ten_column_predictions, y_true, full_model_file_path = \
+                    svr.predict(dataset=dataset_data, dataframe=dataset_source, fs_algorithm=feature_selection,
+                                C=regularization, epsilon=epsilon)
 
-            regressor = best_score[3]
+                regressor = best_score[3]
 
-            result = svr.load_model(dataframe=training_dataframe,
-                                    features=best_score[4],
-                                    regressor=regressor)
+                ranked_index = [str(i) for i in best_score[4]]
+                ranked_index = ",".join(ranked_index)
 
-            ranked_index = [str(i) for i in best_score[4]]
-            ranked_index = ",".join(ranked_index)
-
-            data_for_input = {
-                "feature_selection": feature_selection,
-                "regularization": regularization,
-                "epsilon": epsilon,
-                "accuracy_value": best_score[0],
-                "error_value": best_score[1],
-                "pred_result": best_pred[1],
-                "feature_num": best_score[2],
-                "ranked_index": ranked_index,
-                "dumped_model": full_model_file_path,
-            }
-            # save model
-            save_model_to_db(data_for_input)
-
-            feature_names = dataset_column_names[2:]
-            sorted_feature = [humanize_feature_name(feature_names[i]) for i in best_score[4]]
-
-            poverty_each_city = []
-            geojson_features = []
-            for city, result in best_pred[1].items():
-                city = City.objects.get(pk=city)
-                geojson = CityGeography.objects.filter(city=city).first()
-                data = {
-                    "city": city.name,
-                    "province": city.province,
-                    "poverty_rate": result,
-                    "latitude": city.latitude,
-                    "longitude": city.longitude,
+                data_for_input = {
+                    "feature_selection": feature_selection,
+                    "regularization": regularization,
+                    "epsilon": epsilon,
+                    "accuracy_value": best_score[0],
+                    "error_value": best_score[1],
+                    "pred_result": best_pred[1],
+                    "feature_num": best_score[2],
+                    "ranked_index": ranked_index,
+                    "dumped_model": full_model_file_path,
                 }
-                poverty_each_city.append(data)
+                # save model
+                # save_model_to_db(data_for_input)
 
-                if geojson is not None:
-                    feature = {
-                        "type": "Feature",
-                        "properties": {
-                            "region": geojson.city.name,
-                            "province": geojson.city.province,
-                            "poverty_rate": result,
-                        },
-                        "geometry": json.loads(geojson.area_geometry)
+                feature_names = dataset_column_names[2:]
+                sorted_feature = [humanize_feature_name(feature_names[i]) for i in best_score[4]]
+
+                poverty_each_city = []
+                geojson_features = []
+                for city, result in best_pred[1].items():
+                    city = City.objects.get(pk=city)
+                    geojson = CityGeography.objects.filter(city=city).first()
+                    data = {
+                        "city": city.name,
+                        "province": city.province,
+                        "poverty_rate": result,
+                        "latitude": city.latitude,
+                        "longitude": city.longitude,
                     }
-                    geojson_features.append(feature)
+                    poverty_each_city.append(data)
 
-            region_geojson = {
-                "type": "FeatureCollection",
-                "features": geojson_features
-            }
+                    if geojson is not None:
+                        feature = {
+                            "type": "Feature",
+                            "properties": {
+                                "region": geojson.city.name,
+                                "province": geojson.city.province,
+                                "poverty_rate": result,
+                            },
+                            "geometry": json.loads(geojson.area_geometry)
+                        }
+                        geojson_features.append(feature)
 
-            response["success"] = True
-            response["new_model"] = True
-            response["r2"] = best_score[0]
-            response["rmse"] = best_score[1]
-            response["regularization"] = regularization
-            response["epsilon"] = epsilon
-            response["feature_num"] = best_score[2]
-            response["sorted_feature"] = sorted_feature
-            response["result_chart"] = draw_figure(best_pred[0], y_true)
-            response["result_cities"] = poverty_each_city
-            response["region_geojson"] = region_geojson
-            return JsonResponse(response, content_type="application/json")
+                region_geojson = {
+                    "type": "FeatureCollection",
+                    "features": geojson_features
+                }
+
+                response["success"] = True
+                response["new_model"] = True
+                response["best_model"] = False
+                response["r2"] = best_score[0]
+                response["rmse"] = best_score[1]
+                response["regularization"] = regularization
+                response["epsilon"] = epsilon
+                response["feature_num"] = best_score[2]
+                response["sorted_feature"] = sorted_feature
+                response["result_chart"] = draw_figure(best_pred[0], y_true)
+                response["result_cities"] = poverty_each_city
+                response["region_geojson"] = region_geojson
+                return JsonResponse(response, content_type="application/json")
+            else:
+                model = Prediction.objects.get(pk=existing_model)
+
+                result, city_result, y_true = svr.load_model(
+                                    dataframe=training_dataframe,
+                                    features=Conversion.to_list(Conversion, model.ranked_index),
+                                    url=model.dumped_model)
+
+                ranked_feature = model.ranked_index.split(",")
+                feature_names = dataset_column_names[2:]
+                sorted_feature = [humanize_feature_name(feature_names[int(i)]) for i in ranked_feature]
+
+                poverty_each_city = []
+                geojson_features = []
+                for city, poverty_rate in city_result.items():
+                    city = City.objects.get(pk=city)
+                    geojson = CityGeography.objects.filter(city=city).first()
+                    data = {
+                        "city": city.name,
+                        "province": city.province,
+                        "poverty_rate": poverty_rate,
+                        "latitude": city.latitude,
+                        "longitude": city.longitude,
+                    }
+                    poverty_each_city.append(data)
+
+                    if geojson is not None:
+                        feature = {
+                            "type": "Feature",
+                            "properties": {
+                                "region": geojson.city.name,
+                                "province": geojson.city.province,
+                                "poverty_rate": poverty_rate,
+                            },
+                            "geometry": json.loads(geojson.area_geometry)
+                        }
+                        geojson_features.append(feature)
+
+                region_geojson = {
+                    "type": "FeatureCollection",
+                    "features": geojson_features
+                }
+
+                response["success"] = True
+                response["new_model"] = False
+                response["best_model"] = False
+                response["r2"] = model.accuracy_value
+                response["rmse"] = model.error_value
+                response["regularization"] = model.regularization
+                response["epsilon"] = model.epsilon
+                response["feature_num"] = model.feature_num
+                response["sorted_feature"] = sorted_feature
+                response["result_chart"] = draw_figure(result, y_true)
+                response["result_cities"] = poverty_each_city
+                response["region_geojson"] = region_geojson
+                return JsonResponse(response, content_type="application/json")
 
 
 def humanize_feature_name(feature):

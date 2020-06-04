@@ -4,6 +4,8 @@ const featureSelection = $("#feature-selection");
 const regularizationInput = $("#regularization-input")
 const epsilonInput = $("#epsilon-input");
 
+const useDefaultModel = $("#use-default-model");
+
 const useMyOwnDatasetCheckbox = $("#use-my-own-dataset");
 const availableDatasetSelect = $("#available-dataset");
 const newDatasetSourceFile = $("#new-dataset-source");
@@ -39,6 +41,7 @@ $(document).ready(function () {
   getDatasetDetail();
   formSubmit();
   dataTableInit();
+  useTheDefaultModel();
 
   mymap = L.map('poverty-mapping').setView([-7.166, 109.852], 7);
   mapLayer(mymap);
@@ -168,7 +171,7 @@ function choroplathLegend(map) {
   legend.onAdd = function (map) {
 
     var div = L.DomUtil.create('div', 'info legend'),
-      grades = [3, 6, 9, 12, 15, 18],
+      grades = [0, 3, 6, 9, 12, 15, 18],
       labels = [],
       from, to;
 
@@ -246,23 +249,25 @@ function formSubmit() {
 
 function processAjaxResponse(res) {
   if (res.success) {
-    $("#js-r2").text(res.r2);
-    $("#js-rmse").text(res.rmse);
-    $("#js-regularization").text(res.regularization);
-    $("#js-epsilon").text(res.epsilon);
-    $("#js-feature_num").text(res.feature_num);
-
-    $("#js-sorted_feature ol").remove();
-    const list = document.createElement('ol');
-
-    res.sorted_feature.forEach(item => {
-      const listItem = document.createElement('li');
-
-      listItem.innerHTML = `${item}`;
-      list.appendChild(listItem);
-    });
-
-    $("#js-sorted_feature").append(list);
+    if (!res.best_model){
+      $("#js-r2").text(res.r2);
+      $("#js-rmse").text(res.rmse);
+      $("#js-regularization").text(res.regularization);
+      $("#js-epsilon").text(res.epsilon);
+      $("#js-feature_num").text(res.feature_num);
+  
+      $("#js-sorted_feature ol").remove();
+      const list = document.createElement('ol');
+  
+      res.sorted_feature.forEach(item => {
+        const listItem = document.createElement('li');
+  
+        listItem.innerHTML = `${item}`;
+        list.appendChild(listItem);
+      });
+  
+      $("#js-sorted_feature").append(list);
+    }
     populateTable(res.result_cities);
     populateChartResponse(res);
     scrollPageAfterForm();
@@ -275,7 +280,7 @@ function processAjaxResponse(res) {
 }
 
 function populateChartResponse(res) {
-  if (res.new_model) {
+  if (res.new_model && !res.best_model) {
     $("#js-chart-box").css({ 'display': 'block', });
     $("#js-result_chart").prop("src", `data:image/png;base64,${res.result_chart}`);
   } else {
@@ -301,6 +306,25 @@ function populateTable(data) {
       item.poverty_rate,
     ]).draw();
     number++;
+  });
+}
+
+function useTheDefaultModel() {
+  useDefaultModel.click(function () {
+    if ($(this).prop("checked") == true) {
+      useMyOwnModel.prop("disabled", true);
+      availableModel.prop("disabled", true);
+      featureSelection.prop("disabled", true);
+      regularizationInput.prop("disabled", true);
+      epsilonInput.prop("disabled", true);
+      // =========================================
+    } else if ($(this).prop("checked") == false) {
+      useMyOwnModel.prop("disabled", false);
+      availableModel.prop("disabled", useMyOwnModel.prop("checked"));
+      featureSelection.prop("disabled", !useMyOwnModel.prop("checked"));
+      regularizationInput.prop("disabled", !useMyOwnModel.prop("checked"));
+      epsilonInput.prop("disabled", !useMyOwnModel.prop("checked"));
+    }
   });
 }
 

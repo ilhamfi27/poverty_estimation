@@ -26,15 +26,16 @@ def predict(fs_algorithm=None, dataframe=None, dataset=None, C=1.0, epsilon=0.1)
 
         df = pd.DataFrame(dataset_data)
 
-        city_id = df.iloc[0:, 1].values # city id
-        raw_X = df.iloc[0:, 4:].values # dataset
-        raw_y = df.iloc[0:, 3].values # label
+        city_id = np.asarray(df['city'])
+        raw_X = np.asarray(df.loc[:, 'sum_price_car':'std_buyer_land_rent'])  # features
+        raw_y = np.asarray(df['BPS_poverty_rate'])  # label
 
     if dataframe:
         df = pd.read_excel(dataframe)
-        city_id = df.iloc[0:, 0].values
-        raw_X = df.iloc[0:,2:].values # dataset
-        raw_y = df.iloc[0:,1].values # label
+
+        city_id = np.asarray(df['city_id'])
+        raw_X = np.asarray(df.loc[:, 'sum_price_car':'std_buyer_land_rent'])  # features
+        raw_y = np.asarray(df['BPS_poverty_rate'])  # label
 
 
     # 2. pre-processing
@@ -99,6 +100,7 @@ def predict(fs_algorithm=None, dataframe=None, dataset=None, C=1.0, epsilon=0.1)
         .lowest_score => rmse
         .jumlah fitur dengan terbaik
         .model terbaik
+        .urutan fitur terbaik
     3. result => detail hasil r2 dari 10 fitur hingga 96 fitur (array)
         -> [fitur, r2, rmse]
     4. hasil percobaan prediksi per 10 fitur (array)
@@ -181,9 +183,9 @@ def load_model(features=None, dataframe=None, regressor=None, url=None):
     sorted_feature = []
 
     df = pd.DataFrame(dataframe)
-    city_id = df.iloc[0:, 0].values
-    raw_X = df.iloc[0:,2:].values # dataset
-    raw_y = df.iloc[0:,1].values # label
+    city_id = np.asarray(df['city_id'])
+    raw_X = np.asarray(df.loc[:, 'sum_price_car':'std_buyer_land_rent'])  # features
+    raw_y = np.asarray(df['BPS_poverty_rate'])  # label
 
     # 2. pre-processing
     clean_X = np.nan_to_num(raw_X)
@@ -194,18 +196,17 @@ def load_model(features=None, dataframe=None, regressor=None, url=None):
     X = np.array(sc.transform(clean_X))
     y = np.array(clean_y)
 
-    for row in X:
-        row_array = []
-        for num, feature_idx in enumerate(features):
-            row_array.append(row[feature_idx])
-        sorted_feature.append(row_array)
+    X = X[:, features[:]]
 
     # load the model from disk
     if url:
+        print("=======================================================", flush=True)
+        print(url, flush=True)
+        print("=======================================================", flush=True)
         loaded_model = pickle.load(open(url, 'rb'))
-        result = loaded_model.predict(sorted_feature)
+        result = loaded_model.predict(X)
 
     if regressor:
-        result = regressor.predict(sorted_feature)
+        result = regressor.predict(X)
     y_true = y
     return result, dict(zip(city_id, result)), y_true
