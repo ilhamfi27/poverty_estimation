@@ -4,10 +4,16 @@ validator for predicts
 """
 
 def validate_request(request):
-    new_model = request.POST.get("new_model")
-    new_dataset = request.POST.get("new_dataset")
+    # checkboxes
+    default_model = True if request.POST.get("default_model") == "on" else False
+    new_model = True if request.POST.get("new_model") == "on" else False
+    new_dataset = True if request.POST.get("new_dataset") == "on" else False
+
+    # selections
     existing_model = request.POST.get("existing_model")
     feature_selection = request.POST.get("feature_selection")
+
+    # normal input
     regularization = request.POST.get("regularization")
     epsilon = request.POST.get("epsilon")
     existing_dataset = request.POST.get("existing_dataset")

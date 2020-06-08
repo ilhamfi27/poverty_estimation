@@ -326,8 +326,8 @@ def predictor(request):
                 response["success"] = True
                 response["new_model"] = True
                 response["best_model"] = False
-                response["r2"] = best_score[0]
-                response["rmse"] = best_score[1]
+                response["r2"] = '{0:.6g}'.format(best_score[0])
+                response["rmse"] = '{0:.6g}'.format(best_score[1])
                 response["regularization"] = regularization
                 response["epsilon"] = epsilon
                 response["feature_num"] = best_score[2]
@@ -335,6 +335,9 @@ def predictor(request):
                 response["result_chart"] = draw_figure(best_pred[0], y_true)
                 response["result_cities"] = poverty_each_city
                 response["region_geojson"] = region_geojson
+                response["feature_selection"] = feature_selection
+                response["ranked_index"] = ranked_index
+                response["dumped_model"] = full_model_file_path
                 return JsonResponse(response, content_type="application/json")
             else:
                 model = Prediction.objects.get(pk=existing_model)
@@ -393,6 +396,48 @@ def predictor(request):
                 response["region_geojson"] = region_geojson
                 return JsonResponse(response, content_type="application/json")
 
+# ajax request handler
+def save_model(request):
+    """
+    TODO
+    1. kumpulin variable yang dibutuhkan buat nyimpen model ML
+    2. simpen di session storage browser
+    3. buat operasi penyimpanan model ke database.
+    4. ubah nama model yang disimpan tambahkan _saved (opsional)
+    """
+
+    if request.method == "POST":
+        dumped_model = request.POST.get("dumped_model")
+        epsilon = request.POST.get("epsilon")
+        feature_num = request.POST.get("feature_num")
+        feature_selection = request.POST.get("feature_selection")
+        new_model_name = request.POST.get("new_model_name")
+        r2 = request.POST.get("r2")
+        ranked_index = request.POST.get("ranked_index")
+        regularization = request.POST.get("regularization")
+        rmse = request.POST.get("rmse")
+
+        data_for_input = {
+            "name": new_model_name,
+            "feature_selection": feature_selection,
+            "regularization": regularization,
+            "epsilon": epsilon,
+            "accuracy_value": r2,
+            "error_value": rmse,
+            "feature_num": feature_num,
+            "ranked_index": ranked_index,
+            "dumped_model": dumped_model,
+        }
+        # save model
+        new_model = save_model_to_db(data_for_input)
+
+        context = {}
+        context["name"] = new_model_name
+        context["accuracy"] = r2
+        context["id"] = new_model.id
+        context["saved"] = True
+        return JsonResponse(context, content_type="application/json")
+
 
 def humanize_feature_name(feature):
     aggregation = {
@@ -434,21 +479,27 @@ def draw_figure(predicted, real):
 
 def save_model_to_db(data_dict):
     prediction_data = data_dict
-    prediction_result_values = data_dict["pred_result"]
-    prediction_data.pop("pred_result")
 
-    prediction = Prediction.objects.create(**prediction_data)
+    prediction = Prediction(**prediction_data)
+    prediction.save()
 
-    prediction_results = []
-    for city_id, result in prediction_result_values.items():
-        city = City.objects.get(pk=city_id)
-        prediction_results.append(PredictionResult(
-            city=city,
-            prediction=prediction,
-            result=result,
-        ))
+    return prediction
 
-    prediction_result = PredictionResult.objects.bulk_create(prediction_results)
+    # also method for store results but not necessary
+    #
+    # prediction_result_values = data_dict["pred_result"]
+    # prediction_data.pop("pred_result")
+    #
+    # prediction_results = []
+    # for city_id, result in prediction_result_values.items():
+    #     city = City.objects.get(pk=city_id)
+    #     prediction_results.append(PredictionResult(
+    #         city=city,
+    #         prediction=prediction,
+    #         result=result,
+    #     ))
+    #
+    # prediction_result = PredictionResult.objects.bulk_create(prediction_results)
 
 
 def save_dataset_to_db(source_file):

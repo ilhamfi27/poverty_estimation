@@ -22,6 +22,8 @@ const progressPanel = $("#multisteps-form__panel");
 
 const datasetPredict = $("#dataset-predict");
 
+const saveButton = $("#js-save-model-button");
+
 const appUrl = "http://localhost:8000"
 
 let modelSelected = false;
@@ -42,6 +44,8 @@ $(document).ready(function () {
   formSubmit();
   dataTableInit();
   useTheDefaultModel();
+  saveButton.hide();
+  savingModel();
 
   mymap = L.map('poverty-mapping').setView([-7.166, 109.852], 7);
   mapLayer(mymap);
@@ -237,7 +241,6 @@ function formSubmit() {
       cache: false,
       processData: false,
       success: function (res) {
-        console.log(res);
         processAjaxResponse(res);
       },
       error: function (err) {
@@ -249,31 +252,32 @@ function formSubmit() {
 
 function processAjaxResponse(res) {
   if (res.success) {
-    if (!res.best_model){
+    if (!res.best_model) {
       $("#js-r2").text(res.r2);
       $("#js-rmse").text(res.rmse);
       $("#js-regularization").text(res.regularization);
       $("#js-epsilon").text(res.epsilon);
       $("#js-feature_num").text(res.feature_num);
-  
+
       $("#js-sorted_feature ol").remove();
       const list = document.createElement('ol');
-  
+
       res.sorted_feature.forEach(item => {
         const listItem = document.createElement('li');
-  
+
         listItem.innerHTML = `${item}`;
         list.appendChild(listItem);
       });
-  
+
       $("#js-sorted_feature").append(list);
+
     } else {
       $("#js-r2").text("");
       $("#js-rmse").text("");
       $("#js-regularization").text("");
       $("#js-epsilon").text("");
       $("#js-feature_num").text("");
-  
+
       $("#js-sorted_feature ol").remove();
     }
     populateTable(res.result_cities);
@@ -282,9 +286,78 @@ function processAjaxResponse(res) {
 
     cloropathLayer(mymap, res.region_geojson);
 
+    if (!res.best_model && res.new_model && res.success) {
+      saveButton.show();
+      storeImportantData(res);
+    }
+
   } else {
     showErrorModal(["Failed to predict due to incompatible data input"])
   }
+}
+
+function storeImportantData(res) {
+  delete res.result_chart;
+  delete res.sorted_feature;
+  delete res.region_geojson;
+  delete res.result_cities;
+  delete res.new_model;
+
+  sessionStorage.setItem('prediction_data', JSON.stringify(res));
+}
+
+function savingModel() {
+  $("#new-model-name-form").submit(function (e) {
+    e.preventDefault();
+    const url = $(this).prop("action");
+    const formData = new FormData(this);
+
+    let formObject = {};
+
+    formData.forEach((value, key) => {
+      formObject[key] = value
+    });
+
+    const data = JSON.parse(JSON.stringify(formObject));
+    const sessionInformation = JSON.parse(sessionStorage.getItem("prediction_data"));
+
+    const predictInformation = {
+      ...data,
+      ...sessionInformation,
+    };
+
+    $.ajax({
+      url: url,
+      method: 'POST',
+      data: predictInformation,
+      success: function (res) {
+        respondToSavedModel(res);
+      },
+      error: function (err) {
+        Swal.fire(
+          "Ooops!",
+          "Failed to save model",
+          "error"
+        );
+      }
+    });
+  });
+}
+
+function respondToSavedModel(res) {
+  availableModel.append(`<option value="${res.id}">${res.name} - ${res.accuracy}</option>`);
+
+  sessionStorage.removeItem("prediction_data")
+  saveButton.hide();
+
+  $('#js-save-model-modal').modal('hide');
+
+  Swal.fire(
+    "Saved!",
+    "Model Has Been Saved",
+    "success"
+  );
+  
 }
 
 function populateChartResponse(res) {
@@ -342,12 +415,12 @@ function useMyOwnDataset() {
       availableDatasetSelect.prop("disabled", true);
       newDatasetSourceFile.prop("disabled", false);
       ownDataset = true;
-      $("#js-div-dataset-detail").css({"display": "none"});
+      $("#js-div-dataset-detail").css({ "display": "none" });
     } else if ($(this).prop("checked") == false) {
       availableDatasetSelect.prop("disabled", false);
       newDatasetSourceFile.prop("disabled", true);
       ownDataset = false;
-      $("#js-div-dataset-detail").css({"display": "block"});
+      $("#js-div-dataset-detail").css({ "display": "block" });
     }
   });
 }
@@ -360,14 +433,14 @@ function createNewModel() {
       regularizationInput.prop("disabled", false);
       epsilonInput.prop("disabled", false);
       ownModel = true;
-      $("#js-div-model-detail").css({"display": "none"});
+      $("#js-div-model-detail").css({ "display": "none" });
     } else {
       availableModel.prop("disabled", false);
       featureSelection.prop("disabled", true);
       regularizationInput.prop("disabled", true);
       epsilonInput.prop("disabled", true);
       ownModel = false;
-      $("#js-div-model-detail").css({"display": "block"});
+      $("#js-div-model-detail").css({ "display": "block" });
     }
   });
 }
@@ -389,8 +462,8 @@ function panelHeightChanged() {
   const activePanelHeight = activePanel.offsetHeight;
   const modeldetailHeight = $("#js-div-model-detail").height();
   console.log(activePanelHeight + modeldetailHeight);
-  
-  $("#js-form-container").css({"height": (activePanelHeight + modeldetailHeight) + "px"})
+
+  $("#js-form-container").css({ "height": (activePanelHeight + modeldetailHeight) + "px" })
 }
 
 function getModelDetail() {
@@ -403,7 +476,7 @@ function getModelDetail() {
         success: function (res) {
           const response = res.data;
 
-          $("#js-div-model-detail").css({"display": "block"});
+          $("#js-div-model-detail").css({ "display": "block" });
           $("#js-model-fs-used").text(response.feature_selection);
           $("#js-model-regularization-parameter").text(response.regularization);
           $("#js-model-epsilon-parameter").text(response.epsilon);
@@ -430,7 +503,7 @@ function getDatasetDetail() {
         success: function (res) {
           const response = res.data;
 
-          $("#js-div-dataset-detail").css({"display": "block"});
+          $("#js-div-dataset-detail").css({ "display": "block" });
           $("#js-dataset-total-rows").text(response.total_rows);
           $("#js-dataset-valid-date").text(response.valid_date);
         },

@@ -10,5 +10,6 @@ urlpatterns = [
     path('predict_list/', views.predict_list, name='predict_list'),
     path('api/mapping_result/', views.mapping_result, name='mapping_result'),
     path('api/get_model_detail/', views.get_model_detail, name='get_model_detail'),
+    path('api/save_model/', views.save_model, name='save_model'),
 
 ]

@@ -94,8 +94,7 @@
                           <option value="">Select Available Model</option>
 
                           {% for data in prediction_data %}
-                          <option value="{{ data.id }}">{{ data.feature_selection }} - {{ data.accuracy_value }}
-                          </option>
+                          <option value="{{ data.id }}">{{ data.name }} - {{ data.accuracy_value }}</option>
                           {% endfor %}
                         </select>
                       </div>
@@ -310,8 +309,8 @@
             </div>
             <div class="col">
               <button type="button" class="btn btn-primary btn-sm float-right" id="js-save-model-button"
-                data-toggle="tooltip" data-placement="top" title="Save the new model">
-                <i class="fas fa-save"></i>
+                data-toggle="modal" data-target="#js-save-model-modal">
+                <i data-toggle="tooltip" title="Save the new model" class="fas fa-save"></i>
               </button>
             </div>
           </div>
@@ -390,6 +389,36 @@
             </div>
           </div>
         </div>
+      </div>
+    </div>
+  </div>
+  <!-- Modal -->
+  <div class="modal fade" id="js-save-model-modal" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle"
+    aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <form action="/predicts/api/save_model/" id="new-model-name-form">
+          {% csrf_token %}
+          <div class="modal-header">
+            <h5 class="modal-title" id="exampleModalLongTitle">Save New Model</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            <div class="form-group">
+              <label for="new-model-name" class="form-control-label">
+                New Model Name
+              </label>
+              <input type="text" class="form-control" id="new-model-name" name="new_model_name"
+                placeholder="Pick a Name For The New Model">
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            <button type="submit" class="btn btn-success">Save changes</button>
+          </div>
+        </form>
       </div>
     </div>
   </div>
