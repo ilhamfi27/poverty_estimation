@@ -3,7 +3,7 @@ from django.shortcuts import render, redirect
 from datasets.models import Dataset, City, DatasetProfile, CityGeography
 from django.forms.models import model_to_dict
 from .models import Prediction, PredictionResult
-from .validator import validate_request
+from .validator import validate_request, saving_model_validation
 import predicts.svr as svr
 import matplotlib.pyplot as plt
 import os
@@ -170,8 +170,8 @@ def predictor(request):
         response = {}
         if not validate_request(request):
             response["success"] = False
-            response["message"] = "Bad Request"
-            return JsonResponse(response, content_type="application/json")
+            response["message"] = ["Failed to predict due to incompatible data input"]
+            return JsonResponse(response, content_type="application/json", status=400)
 
         dataset_predict = request.FILES['dataset_predict']
         training_dataframe = pd.read_excel(dataset_predict)
@@ -405,6 +405,10 @@ def save_model(request):
     3. buat operasi penyimpanan model ke database.
     4. ubah nama model yang disimpan tambahkan _saved (opsional)
     """
+    if not saving_model_validation(request):
+        response = {}
+        response["message"] = ["Failed to save due to incompatible data input"]
+        return JsonResponse(response, content_type="application/json", status=400)
 
     if request.method == "POST":
         dumped_model = request.POST.get("dumped_model")
@@ -429,12 +433,12 @@ def save_model(request):
             "dumped_model": dumped_model,
         }
         # save model
-        new_model = save_model_to_db(data_for_input)
+        # new_model = save_model_to_db(data_for_input)
 
         context = {}
         context["name"] = new_model_name
         context["accuracy"] = r2
-        context["id"] = new_model.id
+        context["id"] = 20
         context["saved"] = True
         return JsonResponse(context, content_type="application/json")
 

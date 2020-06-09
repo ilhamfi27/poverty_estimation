@@ -39,3 +39,11 @@ def validate_request(request):
         return False
 
     return True
+
+
+def saving_model_validation(request):
+    new_model_name = request.POST.get("new_model_name")
+    if new_model_name == "":
+        return False
+
+    return True

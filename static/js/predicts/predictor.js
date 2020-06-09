@@ -244,55 +244,52 @@ function formSubmit() {
         processAjaxResponse(res);
       },
       error: function (err) {
-        console.log(err);
+        if (err.status != 500){
+          showErrorModal(err.responseJSON.message);
+        }
       }
     });
   });
 }
 
 function processAjaxResponse(res) {
-  if (res.success) {
-    if (!res.best_model) {
-      $("#js-r2").text(res.r2);
-      $("#js-rmse").text(res.rmse);
-      $("#js-regularization").text(res.regularization);
-      $("#js-epsilon").text(res.epsilon);
-      $("#js-feature_num").text(res.feature_num);
+  if (!res.best_model) {
+    $("#js-r2").text(res.r2);
+    $("#js-rmse").text(res.rmse);
+    $("#js-regularization").text(res.regularization);
+    $("#js-epsilon").text(res.epsilon);
+    $("#js-feature_num").text(res.feature_num);
 
-      $("#js-sorted_feature ol").remove();
-      const list = document.createElement('ol');
+    $("#js-sorted_feature ol").remove();
+    const list = document.createElement('ol');
 
-      res.sorted_feature.forEach(item => {
-        const listItem = document.createElement('li');
+    res.sorted_feature.forEach(item => {
+      const listItem = document.createElement('li');
 
-        listItem.innerHTML = `${item}`;
-        list.appendChild(listItem);
-      });
+      listItem.innerHTML = `${item}`;
+      list.appendChild(listItem);
+    });
 
-      $("#js-sorted_feature").append(list);
-
-    } else {
-      $("#js-r2").text("");
-      $("#js-rmse").text("");
-      $("#js-regularization").text("");
-      $("#js-epsilon").text("");
-      $("#js-feature_num").text("");
-
-      $("#js-sorted_feature ol").remove();
-    }
-    populateTable(res.result_cities);
-    populateChartResponse(res);
-    scrollPageAfterForm();
-
-    cloropathLayer(mymap, res.region_geojson);
-
-    if (!res.best_model && res.new_model && res.success) {
-      saveButton.show();
-      storeImportantData(res);
-    }
+    $("#js-sorted_feature").append(list);
 
   } else {
-    showErrorModal(["Failed to predict due to incompatible data input"])
+    $("#js-r2").text("");
+    $("#js-rmse").text("");
+    $("#js-regularization").text("");
+    $("#js-epsilon").text("");
+    $("#js-feature_num").text("");
+
+    $("#js-sorted_feature ol").remove();
+  }
+  populateTable(res.result_cities);
+  populateChartResponse(res);
+  scrollPageAfterForm();
+
+  cloropathLayer(mymap, res.region_geojson);
+
+  if (!res.best_model && res.new_model && res.success) {
+    saveButton.show();
+    storeImportantData(res);
   }
 }
 
@@ -334,11 +331,9 @@ function savingModel() {
         respondToSavedModel(res);
       },
       error: function (err) {
-        Swal.fire(
-          "Ooops!",
-          "Failed to save model",
-          "error"
-        );
+        if (err.status != 500){
+          showErrorModal(err.responseJSON.message);
+        }
       }
     });
   });
