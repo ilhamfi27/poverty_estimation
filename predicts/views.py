@@ -12,6 +12,7 @@ import io
 import urllib, base64
 import numpy as np
 import pandas as pd
+from predicts import util
 
 dataset_column_names = [
     'city_id', 'BPS_poverty_rate', 'sum_price_car', 'avg_price_car', 'std_price_car', 'sum_sold_car',
@@ -289,7 +290,8 @@ def predictor(request):
                 # save_model_to_db(data_for_input)
 
                 feature_names = dataset_column_names[2:]
-                sorted_feature = [humanize_feature_name(feature_names[i]) for i in best_score[4]]
+                # sorted_feature = [util.humanize_feature_name(feature_names[i]) for i in best_score[4]]
+                sorted_feature = util.rank_items(ranked_index=best_score[4])
 
                 poverty_each_city = []
                 geojson_features = []
@@ -325,8 +327,8 @@ def predictor(request):
                 response["success"] = True
                 response["new_model"] = True
                 response["best_model"] = False
-                response["r2"] = '{0:.6g}'.format(best_score[0])
-                response["rmse"] = '{0:.6g}'.format(best_score[1])
+                response["r2"] = best_score[0]
+                response["rmse"] = best_score[1]
                 response["regularization"] = regularization
                 response["epsilon"] = epsilon
                 response["feature_num"] = best_score[2]
@@ -348,7 +350,8 @@ def predictor(request):
 
                 ranked_feature = model.ranked_index.split(",")
                 feature_names = dataset_column_names[2:]
-                sorted_feature = [humanize_feature_name(feature_names[int(i)]) for i in ranked_feature]
+                # sorted_feature = [util.humanize_feature_name(feature_names[int(i)]) for i in ranked_feature]
+                sorted_feature = util.rank_items(ranked_index=ranked_feature)
 
                 poverty_each_city = []
                 geojson_features = []
@@ -439,19 +442,6 @@ def save_model(request):
         context["id"] = 20
         context["saved"] = True
         return JsonResponse(context, content_type="application/json")
-
-
-def humanize_feature_name(feature):
-    aggregation = {
-        "avg": "average of",
-        "sum": "sum of",
-        "std": "standard deviation of",
-    }
-    s = feature.split("_")
-    obj = s[2:]
-    result = s[0].replace(s[0], aggregation[s[0]]) + " " + " ".join(obj) + " " + s[1]
-    return result
-
 
 def draw_figure(predicted, real):
     if len(real) < 1:
@@ -587,6 +577,9 @@ def get_model_detail(request):
         model_id = request.GET.get('id')
         prediction = Prediction.objects.filter(pk=model_id).first()
         prediction_response = model_to_dict(prediction)
+
+        prediction_response['accuracy_value'] = '{0:.3g}'.format(prediction_response['accuracy_value'])
+        prediction_response['error_value'] = '{0:.3g}'.format(prediction_response['error_value'])
 
         context = {}
         context['success'] = True

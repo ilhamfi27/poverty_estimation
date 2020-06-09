@@ -302,8 +302,8 @@ function formSubmit() {
 
 function processAjaxResponse(res) {
   if (!res.best_model) {
-    $("#js-r2").text(res.r2);
-    $("#js-rmse").text(res.rmse);
+    $("#js-r2").text(res.r2.toFixed(3));
+    $("#js-rmse").text(res.rmse.toFixed(3));
     $("#js-regularization").text(res.regularization);
     $("#js-epsilon").text(res.epsilon);
     $("#js-feature_num").text(res.feature_num);
