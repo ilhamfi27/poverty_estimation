@@ -197,7 +197,7 @@ def predictor(request):
                 16, 40, 4, 17, 41, 5,
             ]
 
-            result, city_result, y_true = svr.load_model(
+            result, city_result = svr.load_model(
                                 dataframe=training_dataframe,
                                 features=best_feature_list,
                                 url=full_model_file_path)
@@ -236,7 +236,6 @@ def predictor(request):
             response["success"] = True
             response["new_model"] = False
             response["best_model"] = True
-            response["result_chart"] = draw_figure(result, y_true)
             response["result_cities"] = poverty_each_city
             response["region_geojson"] = region_geojson
             return JsonResponse(response, content_type="application/json")
@@ -342,7 +341,7 @@ def predictor(request):
             else:
                 model = Prediction.objects.get(pk=existing_model)
 
-                result, city_result, y_true = svr.load_model(
+                result, city_result = svr.load_model(
                                     dataframe=training_dataframe,
                                     features=Conversion.to_list(Conversion, model.ranked_index),
                                     url=model.dumped_model)
@@ -391,7 +390,6 @@ def predictor(request):
                 response["epsilon"] = model.epsilon
                 response["feature_num"] = model.feature_num
                 response["sorted_feature"] = sorted_feature
-                response["result_chart"] = draw_figure(result, y_true)
                 response["result_cities"] = poverty_each_city
                 response["region_geojson"] = region_geojson
                 return JsonResponse(response, content_type="application/json")

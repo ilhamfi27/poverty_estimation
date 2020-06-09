@@ -54,6 +54,18 @@ $(document).ready(function () {
   mappingInit(mymap);
 });
 
+/**
+ * ==============================================
+ * 
+ * 
+ * 
+ * start of choroplath JS
+ * 
+ * 
+ * 
+ * 
+ * ==============================================
+ */
 function mapLayer(mymap) {
   // L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
   //   attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
@@ -222,11 +234,47 @@ function setMarkers(response, mymap) {
     });
   });
 }
+/**
+ * ==============================================
+ * 
+ * 
+ * 
+ * end of choroplath JS
+ * 
+ * 
+ * 
+ * 
+ * ==============================================
+ */
+
+
+/**
+ * ===============================================
+ * start of micro component init
+ * ===============================================
+ */
 
 function dataTableInit() {
   myDataTable = $('#js-poverty-result').DataTable();
 }
 
+/**
+ * ===============================================
+ * end of micro component init
+ * ===============================================
+ */
+
+/**
+ * ===============================================
+ * 
+ * 
+ * 
+ * start of predict form submit process
+ * 
+ * 
+ * 
+ * ===============================================
+ */
 function formSubmit() {
   $("#predictor-form").submit(function (e) {
     e.preventDefault();
@@ -293,6 +341,36 @@ function processAjaxResponse(res) {
   }
 }
 
+function populateChartResponse(res) {
+  if (res.new_model && !res.best_model) {
+    $("#js-chart-box").css({ 'display': 'block', });
+    $("#js-result_chart").prop("src", `data:image/png;base64,${res.result_chart}`);
+  } else {
+    $("#js-chart-box").css({ 'display': 'none', });
+  }
+}
+
+function scrollPageAfterForm() {
+  // scroll to form
+  $('html, body').animate({
+    scrollTop: $("#js-result-panels").offset().top
+  }, 600);
+}
+
+function populateTable(data) {
+  myDataTable.clear().draw();
+  let number = 1;
+  data.forEach(item => {
+    myDataTable.row.add([
+      number,
+      item.city,
+      item.province,
+      item.poverty_rate + " %",
+    ]).draw();
+    number++;
+  });
+}
+
 function storeImportantData(res) {
   delete res.result_chart;
   delete res.sorted_feature;
@@ -302,6 +380,29 @@ function storeImportantData(res) {
 
   sessionStorage.setItem('prediction_data', JSON.stringify(res));
 }
+/**
+ * ===============================================
+ * 
+ * 
+ * 
+ * end of predict form submit process
+ * 
+ * 
+ * 
+ * ===============================================
+ */
+
+/**
+ * ===============================================
+ * 
+ * 
+ * 
+ * start of saving model process
+ * 
+ * 
+ * 
+ * ===============================================
+ */
 
 function savingModel() {
   $("#new-model-name-form").submit(function (e) {
@@ -355,36 +456,29 @@ function respondToSavedModel(res) {
   
 }
 
-function populateChartResponse(res) {
-  if (res.new_model && !res.best_model) {
-    $("#js-chart-box").css({ 'display': 'block', });
-    $("#js-result_chart").prop("src", `data:image/png;base64,${res.result_chart}`);
-  } else {
-    $("#js-chart-box").css({ 'display': 'none', });
-  }
-}
+/**
+ * ===============================================
+ * 
+ * 
+ * 
+ * end of saving model process
+ * 
+ * 
+ * 
+ * ===============================================
+ */
 
-function scrollPageAfterForm() {
-  // scroll to form
-  $('html, body').animate({
-    scrollTop: $("#js-result-panels").offset().top
-  }, 600);
-}
-
-function populateTable(data) {
-  myDataTable.clear().draw();
-  let number = 1;
-  data.forEach(item => {
-    myDataTable.row.add([
-      number,
-      item.city,
-      item.province,
-      item.poverty_rate + " %",
-    ]).draw();
-    number++;
-  });
-}
-
+/**
+ * ===============================================
+ * 
+ * 
+ * 
+ * start of check boxes responses
+ * 
+ * 
+ * 
+ * ===============================================
+ */
 function useTheDefaultModel() {
   useDefaultModel.click(function () {
     if ($(this).prop("checked") == true) {
@@ -448,18 +542,39 @@ function newModelOrExisting() {
   });
 }
 
-function panelHeightChanged() {
-  /**
-   * TODO
-   * fix height change bug
-   */
-  const activePanel = getActivePanel();
-  const activePanelHeight = activePanel.offsetHeight;
-  const modeldetailHeight = $("#js-div-model-detail").height();
-  console.log(activePanelHeight + modeldetailHeight);
-
-  $("#js-form-container").css({ "height": (activePanelHeight + modeldetailHeight) + "px" })
+function modelValidCheck() {
+  firstStep.click(function () {
+    if (!availableModel.val() && !ownModel) {
+      errorDetail = {
+        "model": "Please choose existing model or create new machine learning model"
+      };
+      showErrorModal(errorDetail);
+    } else { }
+  });
 }
+/**
+ * ===============================================
+ * 
+ * 
+ * 
+ * end of check boxes responses
+ * 
+ * 
+ * 
+ * ===============================================
+ */
+
+/**
+ * ===============================================
+ * 
+ * 
+ * 
+ * start of getter
+ * 
+ * 
+ * 
+ * ===============================================
+ */
 
 function getModelDetail() {
   availableModel.change(function (e) {
@@ -510,17 +625,25 @@ function getDatasetDetail() {
   });
 }
 
-function modelValidCheck() {
-  firstStep.click(function () {
-    console.log("HAHAHA");
-    if (!availableModel.val() && !ownModel) {
-      errorDetail = {
-        "model": "Please choose existing model or create new machine learning model"
-      };
-      showErrorModal(errorDetail);
-    } else { }
+function getPredictionId(id) {
+  $.ajax({
+    url: `/predicts/prediction_result/${id}/`,
+    method: 'GET',
+    success: function (res) { }
   });
 }
+
+/**
+ * ===============================================
+ * 
+ * 
+ * 
+ * end of getter
+ * 
+ * 
+ * 
+ * ===============================================
+ */
 
 function showErrorModal(errorData) {
   const list = document.createElement('ul');
@@ -539,10 +662,32 @@ function showErrorModal(errorData) {
   );
 }
 
-function getPredictionId(id) {
-  $.ajax({
-    url: `/predicts/prediction_result/${id}/`,
-    method: 'GET',
-    success: function (res) { }
-  });
+/**
+ * ===============================================
+ * 
+ * 
+ * 
+ * end of swal fires
+ * 
+ * 
+ * 
+ * ===============================================
+ */
+
+/**
+ * ===============================================
+ * miscellaneous functions
+ * ===============================================
+ */
+function panelHeightChanged() {
+  /**
+   * TODO
+   * fix height change bug
+   */
+  const activePanel = getActivePanel();
+  const activePanelHeight = activePanel.offsetHeight;
+  const modeldetailHeight = $("#js-div-model-detail").height();
+  console.log(activePanelHeight + modeldetailHeight);
+
+  $("#js-form-container").css({ "height": (activePanelHeight + modeldetailHeight) + "px" })
 }

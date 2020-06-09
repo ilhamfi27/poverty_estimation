@@ -185,16 +185,13 @@ def load_model(features=None, dataframe=None, regressor=None, url=None):
     df = pd.DataFrame(dataframe)
     city_id = np.asarray(df['city_id'])
     raw_X = np.asarray(df.loc[:, 'sum_price_car':'std_buyer_land_rent'])  # features
-    raw_y = np.asarray(df['BPS_poverty_rate'])  # label
 
     # 2. pre-processing
     clean_X = np.nan_to_num(raw_X)
-    clean_y = np.nan_to_num(raw_y)
 
     # 3. normalization
     sc.fit(raw_X)
     X = np.array(sc.transform(clean_X))
-    y = np.array(clean_y)
 
     X = X[:, features[:]]
 
@@ -208,5 +205,4 @@ def load_model(features=None, dataframe=None, regressor=None, url=None):
 
     if regressor:
         result = regressor.predict(X)
-    y_true = y
-    return result, dict(zip(city_id, result)), y_true
+    return result, dict(zip(city_id, result))
