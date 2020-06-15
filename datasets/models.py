@@ -12,6 +12,7 @@ class City(models.Model):
 
 
 class DatasetProfile(models.Model):
+    name = models.CharField(max_length=50, default="")
     total_row = models.IntegerField(default=0)
     valid_date = models.DateField(auto_now_add=True)
     created_at = models.DateTimeField(auto_now_add=True)

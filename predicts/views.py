@@ -2,7 +2,7 @@ from django.http import JsonResponse
 from django.shortcuts import render, redirect
 from datasets.models import Dataset, City, DatasetProfile, CityGeography
 from django.forms.models import model_to_dict
-from .models import Prediction, PredictionResult
+from .models import Prediction, PredictionResult, MachineLearningModel
 from .validator import validate_request, saving_model_validation
 import predicts.svr as svr
 import matplotlib.pyplot as plt
@@ -40,7 +40,6 @@ dataset_column_names = [
 ]
 
 prediction_result_table_header = [
-    "name",
     "feature selection",
     "regularization",
     "epsilon",
@@ -124,25 +123,24 @@ def mapping_result(request):
 
 
 def predictor(request):
-    predictions = Prediction.objects.values_list("id",
+    ml_model = MachineLearningModel.objects.values_list("id",
                                                  "name",
                                                  "feature_selection",
-                                                 "regularization",
-                                                 "epsilon",
                                                  "accuracy_value",
                                                  "error_value")
     dataset_profiles = DatasetProfile.objects.values("id",
                                                  "valid_date",
                                                  "total_row")
 
-    prediction_data = [dict(zip(prediction_column_names, data)) for data in predictions]
+    saved_ml_model = [dict(zip(("id", "name", "feature_selection", "accuracy_value", "error_value"), data)) for data in ml_model]
+    print(saved_ml_model, flush=True)
 
     context = {
         'dataset_column_names': dataset_column_names,
         'chart_data': [],
         'real_data': [],
         'table_header': prediction_result_table_header,
-        'prediction_data': prediction_data,
+        'saved_ml_model': saved_ml_model,
         'dataset_profiles_data': dataset_profiles,
     }
 
@@ -234,6 +232,19 @@ def predictor(request):
                 "features": geojson_features
             }
 
+            data_for_input = {
+                "feature_selection": feature_selection,
+                "regularization": None,
+                "epsilon": None,
+                "accuracy_value": None,
+                "error_value": None,
+                "pred_result": city_result,
+                "feature_num": None,
+                "ranked_index": None,
+            }
+            # save model
+            save_prediction_to_db(data_for_input)
+
             response["success"] = True
             response["new_model"] = False
             response["best_model"] = True
@@ -284,10 +295,9 @@ def predictor(request):
                     "pred_result": best_pred[1],
                     "feature_num": best_score[2],
                     "ranked_index": ranked_index,
-                    "dumped_model": full_model_file_path,
                 }
                 # save model
-                # save_model_to_db(data_for_input)
+                save_prediction_to_db(data_for_input)
 
                 feature_names = dataset_column_names[2:]
                 # sorted_feature = [util.humanize_feature_name(feature_names[i]) for i in best_score[4]]
@@ -327,8 +337,8 @@ def predictor(request):
                 response["success"] = True
                 response["new_model"] = True
                 response["best_model"] = False
-                response["r2"] = best_score[0]
-                response["rmse"] = best_score[1]
+                response["accuracy_value"] = best_score[0]
+                response["error_value"] = best_score[1]
                 response["regularization"] = regularization
                 response["epsilon"] = epsilon
                 response["feature_num"] = best_score[2]
@@ -341,7 +351,7 @@ def predictor(request):
                 response["dumped_model"] = full_model_file_path
                 return JsonResponse(response, content_type="application/json")
             else:
-                model = Prediction.objects.get(pk=existing_model)
+                model = MachineLearningModel.objects.get(pk=existing_model)
 
                 result, city_result = svr.load_model(
                                     dataframe=training_dataframe,
@@ -349,9 +359,8 @@ def predictor(request):
                                     url=model.dumped_model)
 
                 ranked_feature = model.ranked_index.split(",")
-                feature_names = dataset_column_names[2:]
-                # sorted_feature = [util.humanize_feature_name(feature_names[int(i)]) for i in ranked_feature]
-                sorted_feature = util.rank_items(ranked_index=ranked_feature)
+                ranked_features = [int(i) for i in ranked_feature]
+                sorted_feature = util.rank_items(ranked_index=ranked_features)
 
                 poverty_each_city = []
                 geojson_features = []
@@ -384,13 +393,26 @@ def predictor(request):
                     "features": geojson_features
                 }
 
+                data_for_input = {
+                    "feature_selection": feature_selection,
+                    "regularization": regularization,
+                    "epsilon": epsilon,
+                    "accuracy_value": model.accuracy_value,
+                    "error_value": model.error_value,
+                    "pred_result": city_result,
+                    "feature_num": model.feature_num,
+                    "ranked_index": model.ranked_index,
+                }
+                # save model
+                save_prediction_to_db(data_for_input)
+
                 response["success"] = True
                 response["new_model"] = False
                 response["best_model"] = False
-                response["r2"] = model.accuracy_value
-                response["rmse"] = model.error_value
-                response["regularization"] = model.regularization
-                response["epsilon"] = model.epsilon
+                response["accuracy_value"] = model.accuracy_value
+                response["error_value"] = model.error_value
+                response["regularization"] = "-"
+                response["epsilon"] = "-"
                 response["feature_num"] = model.feature_num
                 response["sorted_feature"] = sorted_feature
                 response["result_cities"] = poverty_each_city
@@ -413,20 +435,16 @@ def save_model(request):
 
     if request.method == "POST":
         dumped_model = request.POST.get("dumped_model")
-        epsilon = request.POST.get("epsilon")
         feature_num = request.POST.get("feature_num")
         feature_selection = request.POST.get("feature_selection")
         new_model_name = request.POST.get("new_model_name")
         r2 = request.POST.get("r2")
         ranked_index = request.POST.get("ranked_index")
-        regularization = request.POST.get("regularization")
         rmse = request.POST.get("rmse")
 
         data_for_input = {
             "name": new_model_name,
             "feature_selection": feature_selection,
-            "regularization": regularization,
-            "epsilon": epsilon,
             "accuracy_value": r2,
             "error_value": rmse,
             "feature_num": feature_num,
@@ -434,7 +452,7 @@ def save_model(request):
             "dumped_model": dumped_model,
         }
         # save model
-        # new_model = save_model_to_db(data_for_input)
+        new_model = save_model_to_db(data_for_input)
 
         context = {}
         context["name"] = new_model_name
@@ -469,29 +487,35 @@ def draw_figure(predicted, real):
     return uri
 
 
-def save_model_to_db(data_dict):
+def save_prediction_to_db(data_dict):
     prediction_data = data_dict
+    prediction_result_values = data_dict["pred_result"]
 
+    prediction_data.pop("pred_result")
     prediction = Prediction(**prediction_data)
     prediction.save()
 
+
+    prediction_results = []
+    for city_id, result in prediction_result_values.items():
+        city = City.objects.get(pk=city_id)
+        prediction_results.append(PredictionResult(
+            city=city,
+            prediction=prediction,
+            result=result,
+        ))
+
+    prediction_result = PredictionResult.objects.bulk_create(prediction_results)
+
     return prediction
 
-    # also method for store results but not necessary
-    #
-    # prediction_result_values = data_dict["pred_result"]
-    # prediction_data.pop("pred_result")
-    #
-    # prediction_results = []
-    # for city_id, result in prediction_result_values.items():
-    #     city = City.objects.get(pk=city_id)
-    #     prediction_results.append(PredictionResult(
-    #         city=city,
-    #         prediction=prediction,
-    #         result=result,
-    #     ))
-    #
-    # prediction_result = PredictionResult.objects.bulk_create(prediction_results)
+
+def save_model_to_db(data_dict):
+    ml_model = MachineLearningModel(**data_dict)
+    ml_model.save()
+
+    return ml_model
+
 
 
 def save_dataset_to_db(source_file):
@@ -555,7 +579,6 @@ def mapping(request):
 def predict_list(request):
     if request.method == "GET":
         predictions = Prediction.objects.values_list("id",
-                                                     "name",
                                                      "feature_selection",
                                                      "regularization",
                                                      "epsilon",
@@ -575,14 +598,14 @@ def predict_list(request):
 def get_model_detail(request):
     if request.method == "GET":
         model_id = request.GET.get('id')
-        prediction = Prediction.objects.filter(pk=model_id).first()
-        prediction_response = model_to_dict(prediction)
+        model = MachineLearningModel.objects.filter(pk=model_id).first()
+        model_response = model_to_dict(model)
 
-        prediction_response['accuracy_value'] = '{0:.3g}'.format(prediction_response['accuracy_value'])
-        prediction_response['error_value'] = '{0:.3g}'.format(prediction_response['error_value'])
+        model_response['accuracy_value'] = '{0:.3g}'.format(model_response['accuracy_value'])
+        model_response['error_value'] = '{0:.3g}'.format(model_response['error_value'])
 
         context = {}
         context['success'] = True
-        context['data'] = prediction_response
+        context['data'] = model_response
 
         return JsonResponse(context, content_type="application/json")

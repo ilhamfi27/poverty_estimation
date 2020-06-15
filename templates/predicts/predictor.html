@@ -93,7 +93,7 @@
                         <select name="existing_model" class="form-control" id="available-model" disabled>
                           <option value="">Select Available Model</option>
 
-                          {% for data in prediction_data %}
+                          {% for data in saved_ml_model %}
                           <option value="{{ data.id }}">{{ data.name }} - {{ data.accuracy_value }}</option>
                           {% endfor %}
                         </select>
@@ -105,14 +105,6 @@
                             <span class="row">
                               <span class="col">Feature Selection Used</span>
                               <span class="col float-right" id="js-model-fs-used"></span>
-                            </span>
-                            <span class="row">
-                              <span class="col">Regularization Parameter</span>
-                              <span class="col float-right" id="js-model-regularization-parameter"></span>
-                            </span>
-                            <span class="row">
-                              <span class="col">Epsilon Parameter</span>
-                              <span class="col float-right" id="js-model-epsilon-parameter"></span>
                             </span>
                             <span class="row">
                               <span class="col">R<sup>2</sup> Value</span>
@@ -208,7 +200,7 @@
                           </div>
                         </div>
                       </div>
-                      <div class="custom-control custom-checkbox mb-4">
+                      <!-- <div class="custom-control custom-checkbox mb-4">
                         <input type="checkbox" class="custom-control-input" id="use-my-own-dataset" name="new_dataset">
                         <label class="custom-control-label" for="use-my-own-dataset">
                           Use My Own Dataset
@@ -235,7 +227,7 @@
                             disabled>
                           <label class="custom-file-label" for="customFileLang"></label>
                         </div>
-                      </div>
+                      </div> -->
                     </div>
                     <div class="button-row d-flex mt-4">
                       <button class="btn btn-primary js-btn-prev" type="button" title="Prev">Prev</button>
@@ -410,7 +402,7 @@
               <label for="new-model-name" class="form-control-label">
                 New Model Name
               </label>
-              <input type="text" class="form-control" id="new-model-name" name="new_model_name"
+              <input type="text" class="form-control" id="new-model-name" name="name"
                 placeholder="Pick a Name For The New Model">
             </div>
           </div>

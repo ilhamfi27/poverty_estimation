@@ -20,6 +20,7 @@ from predicts import views
 urlpatterns = [
     path('', views.predictor),
     path('admin/', admin.site.urls),
+    path('api/v1/', include('api.urls')),
     path('predicts/', include('predicts.urls')),
     path('datasets/', include('datasets.urls')),
 ]

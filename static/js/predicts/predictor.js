@@ -281,7 +281,7 @@ function formSubmit() {
     const url = $(this).prop("action");
 
     $.ajax({
-      url: url,
+      url: `${appUrl}/api/v1/predict/`,
       method: 'POST',
       data: new FormData(this),
       dataType: 'json',
@@ -302,8 +302,8 @@ function formSubmit() {
 
 function processAjaxResponse(res) {
   if (!res.best_model) {
-    $("#js-r2").text(res.r2.toFixed(3));
-    $("#js-rmse").text(res.rmse.toFixed(3));
+    $("#js-r2").text(res.accuracy_value.toFixed(3));
+    $("#js-rmse").text(res.error_value.toFixed(3));
     $("#js-regularization").text(res.regularization);
     $("#js-epsilon").text(res.epsilon);
     $("#js-feature_num").text(res.feature_num);
@@ -407,7 +407,6 @@ function storeImportantData(res) {
 function savingModel() {
   $("#new-model-name-form").submit(function (e) {
     e.preventDefault();
-    const url = $(this).prop("action");
     const formData = new FormData(this);
 
     let formObject = {};
@@ -425,7 +424,7 @@ function savingModel() {
     };
 
     $.ajax({
-      url: url,
+      url: `${appUrl}/api/v1/ml_model/`,
       method: 'POST',
       data: predictInformation,
       success: function (res) {
@@ -441,7 +440,7 @@ function savingModel() {
 }
 
 function respondToSavedModel(res) {
-  availableModel.append(`<option value="${res.id}">${res.name} - ${res.accuracy}</option>`);
+  availableModel.append(`<option value="${res.id}">${res.name} - ${res.accuracy_value}</option>`);
 
   sessionStorage.removeItem("prediction_data")
   saveButton.hide();
@@ -581,15 +580,13 @@ function getModelDetail() {
     const modelId = $(this).val();
     if (modelId != "" || modelId != null || modelId != undefined) {
       $.ajax({
-        url: appUrl + "/predicts/api/get_model_detail/?id=" + modelId,
+        url: appUrl + `/api/v1/ml_model/${modelId}`,
         method: 'GET',
         success: function (res) {
-          const response = res.data;
+          const response = res;
 
           $("#js-div-model-detail").css({ "display": "block" });
           $("#js-model-fs-used").text(response.feature_selection);
-          $("#js-model-regularization-parameter").text(response.regularization);
-          $("#js-model-epsilon-parameter").text(response.epsilon);
           $("#js-model-r2-value").text(response.accuracy_value);
           $("#js-model-rmse-value").text(response.error_value);
           $("#js-model-total-features-used").text(response.feature_num);
@@ -608,13 +605,13 @@ function getDatasetDetail() {
     const datasetId = $(this).val();
     if (datasetId != "" || datasetId != null || datasetId != undefined) {
       $.ajax({
-        url: appUrl + "/datasets/api/get_dataset_detail/?id=" + datasetId,
+        url: appUrl + `/api/v1/dataset_profile/${datasetId}`,
         method: 'GET',
         success: function (res) {
-          const response = res.data;
+          const response = res;
 
           $("#js-div-dataset-detail").css({ "display": "block" });
-          $("#js-dataset-total-rows").text(response.total_rows);
+          $("#js-dataset-total-rows").text(response.total_row);
           $("#js-dataset-valid-date").text(response.valid_date);
         },
         error: function (e) {
