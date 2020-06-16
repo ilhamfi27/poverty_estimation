@@ -2,77 +2,71 @@
 
 <!-- Sidenav -->
 <nav class="sidenav navbar navbar-vertical  fixed-left  navbar-expand-xs navbar-light bg-white" id="sidenav-main">
-    <div class="scrollbar-inner">
-        <!-- Brand -->
-        <div class="sidenav-header  align-items-center">
-            <a class="navbar-brand" href="/">
-                SVR Predictor
-            </a>
-        </div>
-        <div class="navbar-inner">
-            <!-- Collapse -->
-            <div class="collapse navbar-collapse" id="sidenav-collapse-main">
-                <!-- Nav items -->
-                <ul class="navbar-nav">
-                    <li class="nav-item">
-                        <!-- <a class="nav-link active" href="{% url 'predicts:index' %}">
-                            <i class="ni ni-tv-2 text-primary"></i>
-                            <span class="nav-link-text">Dashboard</span>
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'datasets:new' %}">
-                            <i class="ni ni-archive-2 text-orange"></i>
-                            <span class="nav-link-text">Insert Dataset</span>
-                        </a>
-                    </li> -->
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'predicts:predictor' %}">
-                            <i class="ni ni-planet text-yellow"></i>
-                            <span class="nav-link-text">Predict</span>
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'datasets:list' 'training' %}">
-                            <i class="ni ni-bullet-list-67 text-primary"></i>
-                            <span class="nav-link-text">Dataset Training</span>
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'datasets:list' 'testing' %}">
-                            <i class="ni ni-bullet-list-67 text-primary"></i>
-                            <span class="nav-link-text">Predictable Dataset</span>
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'datasets:city_list' %}">
-                            <i class="ni ni-world text-primary"></i>
-                            <span class="nav-link-text">Cities</span>
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'predicts:predict_list' %}">
-                            <i class="ni ni-bullet-list-67 text-primary"></i>
-                            <span class="nav-link-text">Prediction History</span>
-                        </a>
-                    </li>
-                </ul>
-                <!-- Divider -->
-                <hr class="my-3">
-                <!-- Heading -->
-                <h6 class="navbar-heading p-0 text-muted">
-                    <span class="docs-normal">Author</span>
-                </h6>
-                <!-- Navigation -->
-                <ul class="navbar-nav mb-md-3">
-                    <li class="nav-item">
-                        <a class="nav-link" href="#" target="_blank">
-                            <i class="ni ni-spaceship"></i>
-                            <span class="nav-link-text">About</span>
-                        </a>
-                    </li>
-                </ul>
-            </div>
-        </div>
+  <div class="scrollbar-inner">
+    <!-- Brand -->
+    <div class="sidenav-header  align-items-center">
+      <a class="navbar-brand" href="/">
+        SVR Predictor
+      </a>
     </div>
+    <div class="navbar-inner">
+      <!-- Collapse -->
+      <div class="collapse navbar-collapse" id="sidenav-collapse-main">
+        <!-- Nav items -->
+        <ul class="navbar-nav">
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'predicts:predictor' %}">
+              <i class="fas fa-chart-line text-primary"></i>
+              <span class="nav-link-text">Predict</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'datasets:list' 'training' %}">
+              <i class="fas fa-database text-primary"></i>
+              <span class="nav-link-text">Dataset Training</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'datasets:list' 'testing' %}">
+                <i class="fas fa-database text-yellow"></i>
+              <span class="nav-link-text">Predictable Dataset</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'predicts:ml_model' %}">
+              <i class="fas fa-download text-primary"></i>
+              <span class="nav-link-text">Saved Model</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'predicts:predict_list' %}">
+              <i class="fas fa-history text-primary"></i>
+              <span class="nav-link-text">Prediction History</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'datasets:city_list' %}">
+              <i class="fas fa-map-marked-alt text-primary"></i>
+              <span class="nav-link-text">Cities</span>
+            </a>
+          </li>
+        </ul>
+        <!-- Divider -->
+        <hr class="my-3">
+        <!-- Heading -->
+        <h6 class="navbar-heading p-0 text-muted">
+          <span class="docs-normal">Author</span>
+        </h6>
+        <!-- Navigation -->
+        <ul class="navbar-nav mb-md-3">
+          <li class="nav-item">
+            <a class="nav-link" href="#" target="_blank">
+              <i class="ni ni-spaceship"></i>
+              <span class="nav-link-text">About</span>
+            </a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
 </nav>

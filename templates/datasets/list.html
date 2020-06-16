@@ -47,10 +47,10 @@
                     <td>
                       <button type="button" class="btn btn-sm btn-primary" id="js-show-dataset-button"
                         onclick="datasetDetail({{data.id}})"><i class="fas fa-eye"></i></button>
-                      <button type="button" class="btn btn-sm btn-danger" id="js-delete-dataset-button" data-id="{{data.id}}">
-                        <i class="fas fa-trash"></i></button>
                       <button type="button" class="btn btn-sm btn-success" id="js-edit-dataset-button" data-id="{{data.id}}">
                         <i class="fas fa-edit"></i></button>
+                      <button type="button" class="btn btn-sm btn-danger" id="js-delete-dataset-button" data-id="{{data.id}}">
+                        <i class="fas fa-trash"></i></button>
                     </td>
                   </tr>
                   {% endfor %}
@@ -136,7 +136,7 @@
         <div class="modal-body">
           <div class="form-group">
             <label for="new-dataset-name" class="form-control-label">
-              New Model Name
+              Edit Dataset Name
             </label>
             <input type="text" class="form-control" id="edit-dataset-name" name="name"
               placeholder="Pick a Name For The New Model" required>
@@ -159,7 +159,7 @@
 <!-- Modal Detail Dataset -->
 <div class="modal fade" id="js-dataset-detail-modal" tabindex="-1" role="dialog"
   aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
-  <div class="modal-dialog modal-lg" role="document">
+  <div class="modal-dialog modal-xl" role="document">
     <div class="modal-content">
       <form id="new-dataset-form">
         {% csrf_token %}
@@ -197,7 +197,4 @@
 <script src="{% static 'admin_argon/assets/vendor/datatables.net/js/jquery.dataTables.min.js' %}"></script>
 <script src="{% static 'admin_argon/assets/vendor/datatables.net-bs4/js/dataTables.bootstrap4.min.js' %}"></script>
 <script src="{% static 'js/datasets/list.js' %}"></script>
-<script>
-  $('#js-dataset-detail-table').dataTable();
-</script>
 {% endblock %}

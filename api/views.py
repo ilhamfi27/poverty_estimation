@@ -1,4 +1,5 @@
 import os, json, pandas as pd, numpy as np, matplotlib.pyplot as plt, urllib, base64, io
+from datetime import datetime
 from rest_framework import views
 from rest_framework.response import Response
 from rest_framework import status as st
@@ -7,7 +8,8 @@ from rest_framework.response import Response
 from django.forms.models import model_to_dict
 from predicts.models import MachineLearningModel, Prediction, PredictionResult
 from datasets.models import DatasetProfile, CityGeography, City, Dataset
-from api.serializers import DatasetProfileSerializer, ModelMachineLearningSerializer
+from api.serializers import DatasetProfileSerializer, ModelMachineLearningSerializer, PredictionSerializer, \
+    PredictonResultSerializer
 from api.validator import *
 from final_task.util import Conversion
 import final_task.util as util
@@ -138,12 +140,20 @@ class DatasetDetail(views.APIView):
 
 
 class ModelDetail(mixins.RetrieveModelMixin,
+                  mixins.UpdateModelMixin,
+                  mixins.DestroyModelMixin,
                   generics.GenericAPIView):
     queryset = MachineLearningModel.objects.all()
     serializer_class = ModelMachineLearningSerializer
 
     def get(self, request, *args, **kwargs):
         return self.retrieve(request, *args, **kwargs)
+
+    def put(self, request, *args, **kwargs):
+        return self.update(request, *args, **kwargs)
+
+    def delete(self, request, *args, **kwargs):
+        return self.destroy(request, *args, **kwargs)
 
 
 class ModelList(mixins.CreateModelMixin,
@@ -155,6 +165,41 @@ class ModelList(mixins.CreateModelMixin,
         return self.create(request, *args, **kwargs)
 
 
+class PredictionDetail(mixins.RetrieveModelMixin,
+                       mixins.UpdateModelMixin,
+                       mixins.DestroyModelMixin,
+                       generics.GenericAPIView):
+    queryset = Prediction.objects.all()
+    serializer_class = PredictionSerializer
+
+    def get(self, request, *args, **kwargs):
+        return self.retrieve(request, *args, **kwargs)
+
+    def put(self, request, *args, **kwargs):
+        return self.update(request, *args, **kwargs)
+
+    def delete(self, request, *args, **kwargs):
+        return self.destroy(request, *args, **kwargs)
+
+
+class PredictionResultDetail(mixins.RetrieveModelMixin,
+                             generics.GenericAPIView):
+    queryset = Prediction.objects.all()
+    serializer_class = PredictonResultSerializer
+
+    def get(self, request, *args, **kwargs):
+        prediction = self.queryset.get(pk=kwargs['pk'])
+        result = PredictionResult.objects.filter(prediction=prediction)
+        response = []
+        for r in result:
+            city = City.objects.filter(pk=r.city.id).first()
+            res = model_to_dict(r)
+            res['province'] = city.province
+            res['city'] = city.name
+            response.append(res)
+        return Response(response, status=st.HTTP_200_OK)
+
+
 class Predictor(views.APIView):
 
     def post(self, request, format=None):
@@ -162,7 +207,6 @@ class Predictor(views.APIView):
         # checkboxes
         default_model = True if "default_model" in request.data else False
         new_model = True if "new_model" in request.data else False
-        new_dataset = True if "new_dataset" in request.data else False
 
         # normal input
         existing_dataset = request.data["existing_dataset"]
@@ -176,6 +220,7 @@ class Predictor(views.APIView):
 
         dataset_training_profile = DatasetProfile.objects.get(pk=existing_training_dataset)
         dataset_training_data = Dataset.objects.filter(profile=dataset_training_profile)
+        now_time = datetime.now()
 
         # get model -
         # get dataset testing -
@@ -235,6 +280,7 @@ class Predictor(views.APIView):
             }
 
             data_for_input = {
+                "name": dataset_training_profile.name + " - " + now_time.strftime("%d-%m-%Y, %H:%M:%S"),
                 "feature_selection": None,
                 "regularization": None,
                 "epsilon": None,
@@ -295,6 +341,7 @@ class Predictor(views.APIView):
                 ranked_index = ",".join(ranked_index)
 
                 data_for_input = {
+                    "name": dataset_training_profile.name + " - " + now_time.strftime("%d-%m-%Y, %H:%M:%S"),
                     "feature_selection": feature_selection,
                     "regularization": regularization,
                     "epsilon": epsilon,
@@ -403,6 +450,7 @@ class Predictor(views.APIView):
                 }
 
                 data_for_input = {
+                    "name": dataset_training_profile.name + " - " + now_time.strftime("%d-%m-%Y, %H:%M:%S"),
                     "feature_selection": model.feature_selection,
                     "regularization": model.regularization,
                     "epsilon": model.epsilon,

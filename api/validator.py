@@ -13,20 +13,13 @@ def validate_request(request):
     existing_model = request.POST.get("existing_model")
     feature_selection = request.POST.get("feature_selection")
 
-    # normal input
-    regularization = request.POST.get("regularization")
-    epsilon = request.POST.get("epsilon")
-    existing_dataset = request.POST.get("existing_dataset")
-    dataset_source = request.POST.get("dataset_source")
-    dataset_predict = request.POST.get("dataset_predict")
+    existing_dataset = request.data["existing_dataset"]
+    existing_training_dataset = request.data["existing_training_dataset"]
 
     if new_model == "on":
         if feature_selection == "":
             return False
 
-        if new_dataset == "on":
-            if dataset_source == "":
-                return False
         else:
             if existing_dataset == "":
                 return False
@@ -34,8 +27,10 @@ def validate_request(request):
         if existing_model == "":
             return False
 
+    if existing_dataset == "":
+        return False
 
-    if dataset_predict == "":
+    if existing_training_dataset == "":
         return False
 
     return True

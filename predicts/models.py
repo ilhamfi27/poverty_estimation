@@ -7,6 +7,7 @@ class Prediction(models.Model):
         ('chi_square', 'Chi-Square'),
         ('cfs', 'Correlation-based Feature Selection'),
     ]
+    name = models.CharField(max_length=255, null=True, blank=True, default="")
     feature_selection = models.CharField(max_length=10, choices=FEATURE_SELECTION_CHOICES, default="", null=True,
                                          blank=True)
     regularization = models.FloatField(default=1.0, null=True, blank=True)

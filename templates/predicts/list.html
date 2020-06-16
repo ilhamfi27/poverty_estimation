@@ -6,6 +6,11 @@
 {% block head_css %}
 <link rel="stylesheet"
   href="{% static 'admin_argon/assets/vendor/datatables.net-bs4/css/dataTables.bootstrap4.min.css' %}" type="text/css">
+<style>
+  #poverty-mapping {
+    height: 450px;
+  }
+</style>
 {% endblock %}
 
 {% load static %}
@@ -25,24 +30,34 @@
         <div class="card-body">
           <div class="table-responsive table-hover point_row_table">
             <div>
-              <table class="table align-items-center" id="js-dataset-table">
+              <table class="table align-items-center" id="js-prediction-table">
                 <thead class="thead-light">
                   <tr>
                     <th scope="col">No</th>
-                    {% for header in table_header %}
-                    <th scope="col">{{ header }}</th>
-                    {% endfor %}
+                    <th scope="col">Name</th>
+                    <th scope="col">Accuracy Value</th>
+                    <th scope="col">Error Value</th>
+                    <th scope="col">Action</th>
                   </tr>
                 </thead>
                 <tbody class="list">
                   {% for data in prediction_data %}
                   <tr>
-                    <td scope="col">{{ forloop.counter }}</td>
-                    {% for key, value in data.items %}
-                    {% if key != 'id' %}
-                    <td scope="col">{{ value }}</td>
-                    {% endif %}
-                    {% endfor %}
+                    <td>{{ forloop.counter }}</td>
+                    <td>{{ data.name }}</td>
+                    <td>{{ data.accuracy_value }}</td>
+                    <td>{{ data.error_value }}</td>
+                    <td>
+                      <button type="button" class="btn btn-sm btn-primary" id="js-detail-prediction-button"
+                        data-id="{{data.id}}">
+                        <i class="fas fa-eye"></i></button>
+                      <button type="button" class="btn btn-sm btn-success" id="js-edit-prediction-button"
+                        data-id="{{data.id}}">
+                        <i class="fas fa-edit"></i></button>
+                      <button type="button" class="btn btn-sm btn-danger" id="js-delete-prediction-button"
+                        data-id="{{data.id}}">
+                        <i class="fas fa-trash"></i></button>
+                    </td>
                   </tr>
                   {% endfor %}
                 </tbody>
@@ -55,12 +70,96 @@
   </div>
   {% include 'footer.html' %}
 </div>
+
+<!-- Modal -->
+<div class="modal fade" id="js-edit-prediction-modal" tabindex="-1" role="dialog"
+  aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <form id="js-edit-prediction-form">
+        {% csrf_token %}
+        <div class="modal-header">
+          <h5 class="modal-title" id="exampleModalLongTitle">Edit Model</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <div class="form-group">
+            <label for="new-prediction-name" class="form-control-label">
+              Edit Model Name
+            </label>
+            <input type="text" class="form-control" id="edit-prediction-name" name="name"
+              placeholder="Pick a Name For The New Model" required>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+          <button type="submit" class="btn btn-success">Save Model</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Modal -->
+<div class="modal fade" id="js-detail-prediction-modal" tabindex="-1" role="dialog"
+  aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLongTitle">Prediction Result</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+
+        <div class="row">
+          <div class="col">
+            <div class="card">
+              <div class="card-header">
+                <div class="row align-items-center">
+                  <div class="col">
+                    <h6 class="text-light text-uppercase ls-1 mb-1">Cities Poverty Rate</h6>
+                    <h5 class="h3 mb-0"></h5>
+                  </div>
+                  <div class="col">
+                  </div>
+                </div>
+              </div>
+              <div class="card-body">
+                <div class="table-responsive table-hover point_row_table">
+                  <div>
+                    <table class="table align-items-center" id="js-prediction-detail">
+                      <thead class="thead-light">
+                        <tr>
+                          <th scope="col">No</th>
+                          <th scope="col">City</th>
+                          <th scope="col">Province</th>
+                          <th scope="col">Poverty Rate</th>
+                        </tr>
+                      </thead>
+                      <tbody class="list"></tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+      </div>
+      </form>
+    </div>
+  </div>
+</div>
 {% endblock %}
 
 {% block footer_js %}
 <script src="{% static 'admin_argon/assets/vendor/datatables.net/js/jquery.dataTables.min.js' %}"></script>
 <script src="{% static 'admin_argon/assets/vendor/datatables.net-bs4/js/dataTables.bootstrap4.min.js' %}"></script>
-<script>
-  $('#js-dataset-table').dataTable();
-</script>
+<script src="{% static 'js/predicts/list.js' %}"></script>
 {% endblock %}

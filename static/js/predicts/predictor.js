@@ -11,15 +11,20 @@ const availableDatasetSelect = $("#available-dataset");
 const availableTestingDatasetSelect = $("#available-testing-dataset");
 const newDatasetSourceFile = $("#new-dataset-source");
 
-const chooseModel = $("choose-model");
-const chooseDataset = $("choose-dataset");
-const chooseTestingDataset = $("choose-testing-dataset");
+const chooseModel = $("#choose-model");
+const chooseDataset = $("#choose-dataset");
+const chooseTestingDataset = $("#choose-testing-dataset");
 
-const firstStep = $("#step-1");
-const secondStep = $("#step-2");
+const chooseModelButton = $("#js-choose-model-button");
+const chooseDatasetButton = $("#js-choose-dataset-button");
+const chooseTestingButton = $("#js-choose-testing-button");
 
-const progressBtn = $("#multisteps-form__progress-btn");
-const progressPanel = $("#multisteps-form__panel");
+
+const nextStep1 = $("#next-step-1");
+const prevStep2 = $("#prev-step-2");
+
+const progressBtn = $(".multisteps-form__progress-btn");
+const progressPanel = $(".multisteps-form__panel");
 
 const datasetPredict = $("#dataset-predict");
 
@@ -47,6 +52,12 @@ $(document).ready(function () {
   useTheDefaultModel();
   saveButton.hide();
   savingModel();
+
+  // hide data train panel
+  chooseDatasetButton.hide();
+
+  // skip panel
+  skipPanel();
 
   mymap = L.map('poverty-mapping').setView([-7.166, 109.852], 7);
   mapLayer(mymap);
@@ -524,12 +535,13 @@ function respondToSavedModel(res) {
  */
 function useTheDefaultModel() {
   useDefaultModel.click(function () {
-    if ($(this).prop("checked") == true) {
+    if ($(this).prop("checked")) {
       useMyOwnModel.prop("disabled", true);
       availableModel.prop("disabled", true);
       featureSelection.prop("disabled", true);
       regularizationInput.prop("disabled", true);
       epsilonInput.prop("disabled", true);
+      chooseDatasetButton.hide();
       // =========================================
     } else if ($(this).prop("checked") == false) {
       useMyOwnModel.prop("disabled", false);
@@ -537,13 +549,17 @@ function useTheDefaultModel() {
       featureSelection.prop("disabled", !useMyOwnModel.prop("checked"));
       regularizationInput.prop("disabled", !useMyOwnModel.prop("checked"));
       epsilonInput.prop("disabled", !useMyOwnModel.prop("checked"));
+      if (useMyOwnModel.prop("checked")) {
+        chooseDatasetButton.show();
+        chooseDataset.show();
+      }
     }
   });
 }
 
 function useMyOwnDataset() {
   useMyOwnDatasetCheckbox.click(function () {
-    if ($(this).prop("checked") == true) {
+    if ($(this).prop("checked")) {
       availableDatasetSelect.prop("disabled", true);
       newDatasetSourceFile.prop("disabled", false);
       ownDataset = true;
@@ -566,6 +582,8 @@ function createNewModel() {
       epsilonInput.prop("disabled", false);
       ownModel = true;
       $("#js-div-model-detail").css({ "display": "none" });
+      chooseDatasetButton.show();
+      chooseDataset.show();
     } else {
       availableModel.prop("disabled", false);
       featureSelection.prop("disabled", true);
@@ -573,6 +591,8 @@ function createNewModel() {
       epsilonInput.prop("disabled", true);
       ownModel = false;
       $("#js-div-model-detail").css({ "display": "block" });
+      chooseDatasetButton.hide();
+      chooseDataset.hide();
     }
   });
 }
@@ -594,6 +614,25 @@ function modelValidCheck() {
       showErrorModal(errorDetail);
     } else { }
   });
+}
+
+function skipPanel() {
+  let trainingButtonIsVisible = chooseDatasetButton.is(":visible");
+  
+  // if (!trainingButtonIsVisible) {
+    //remove active class from all the panels
+    nextStep1.click(() => {
+      progressPanel.removeClass("js-active");
+      chooseTestingDataset.addClass("js-active");
+      chooseDatasetButton.addClass("js-active");
+      chooseTestingButton.addClass("js-active");
+    });
+    prevStep2.click(() => {
+      progressPanel.removeClass("js-active");
+      chooseModel.addClass("js-active");
+      chooseModelButton.addClass("js-active");
+    });
+  // }
 }
 /**
  * ===============================================

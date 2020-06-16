@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block page_content %}
+
+{% block head_css %}
+<link rel="stylesheet"
+  href="{% static 'admin_argon/assets/vendor/datatables.net-bs4/css/dataTables.bootstrap4.min.css' %}" type="text/css">
+{% endblock %}
+
+{% load static %}
+<!-- Page content -->
+<div class="container-fluid mt--6">
+  <div class="row">
+    <div class="col-xl">
+      <div class="card">
+        <div class="card-header bg-transparent">
+          <div class="row align-items-center">
+            <div class="col-6">
+              <h6 class="text-uppercase text-muted ls-1 mb-1">Saved Model</h6>
+              <h5 class="h3 mb-0">List</h5>
+            </div>
+            <div class="col-6">
+            </div>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="table-responsive">
+            <div>
+              <table class="table align-items-center" id="js-model-table">
+                <thead class="thead-light">
+                  <tr>
+                    <th scope="col">No</th>
+                    <th scope="col">Name</th>
+                    <th scope="col">Accuracy Value</th>
+                    <th scope="col">Error Value</th>
+                    <th scope="col">Action</th>
+                  </tr>
+                </thead>
+                <tbody class="list">
+                  {% for data in saved_ml_model %}
+                  <tr id="js-model-row" data-id="{{ data.id }}">
+                    <td>{{ forloop.counter }}</td>
+                    <td>{{ data.name }}</td>
+                    <td>{{ data.accuracy_value }}</td>
+                    <td>{{ data.error_value }}</td>
+                    <td>
+                      <button type="button" class="btn btn-sm btn-primary" id="js-show-dataset-button"
+                        onclick="datasetDetail({{data.id}})"><i class="fas fa-eye"></i></button>
+                      <button type="button" class="btn btn-sm btn-success" id="js-edit-model-button" data-id="{{data.id}}">
+                        <i class="fas fa-edit"></i></button>
+                      <button type="button" class="btn btn-sm btn-danger" id="js-delete-model-button" data-id="{{data.id}}">
+                        <i class="fas fa-trash"></i></button>
+                    </td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% include 'footer.html' %}
+</div>
+
+<!-- Modal -->
+<div class="modal fade" id="js-edit-model-modal" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle"
+  aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <form id="js-edit-model-form">
+        {% csrf_token %}
+        <div class="modal-header">
+          <h5 class="modal-title" id="exampleModalLongTitle">Edit Model</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <div class="form-group">
+            <label for="new-model-name" class="form-control-label">
+              Edit Model Name
+            </label>
+            <input type="text" class="form-control" id="edit-model-name" name="name"
+              placeholder="Pick a Name For The New Model" required>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+          <button type="submit" class="btn btn-success">Save Model</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block footer_js %}
+<script src="{% static 'admin_argon/assets/vendor/datatables.net/js/jquery.dataTables.min.js' %}"></script>
+<script src="{% static 'admin_argon/assets/vendor/datatables.net-bs4/js/dataTables.bootstrap4.min.js' %}"></script>
+<script src="{% static 'js/predicts/saved_model_list.js' %}"></script>
+{% endblock %}
