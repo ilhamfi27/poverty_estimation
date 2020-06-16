@@ -7,6 +7,7 @@ $(document).ready(function () {
   formSubmit();
   dataTableInit();
   datasetDelete();
+  datasetEdit();
 });
 /**
  * ===============================================
@@ -184,6 +185,54 @@ function datasetDelete() {
           }
         });
       }
+    });
+  });
+}
+
+function datasetEdit() {
+  $('#js-dataset-table tbody').on('click', '#js-edit-dataset-button', function () {
+    const id = $(this).data("id");
+
+
+    $.ajax({
+      url: appUrl + `/api/v1/dataset_profile/${id}`,
+      method: 'GET',
+      success: function (res) {
+        $("#edit-dataset-name").val(res.name);
+        $("#edit-dataset-valid-date").val(res.valid_date);
+        $("#js-edit-dataset-modal").modal("show");
+      }
+    });
+
+    $("#js-edit-dataset-form").submit((e) => {
+      e.preventDefault();
+      let data = $("#js-edit-dataset-form").serialize();
+      console.log(data);
+
+      $.ajax({
+        url: appUrl + `/api/v1/dataset_profile/${id}`,
+        method: 'PUT',
+        data: data,
+        success: (res) => {
+          let temp = datasetTable.row($(this).parents('tr')).data();
+          temp[1] = res.name
+          temp[2] = res.valid_date
+
+          datasetTable
+            .row($(this).parents('tr'))
+            .data(temp)
+            .invalidate();
+
+          $("#js-edit-dataset-modal").modal("hide");
+        },
+        error: (err) => {
+          Swal.fire(
+            "Ooops!",
+            "There's Something Wrong!",
+            "error"
+          );
+        }
+      });
     });
   });
 }

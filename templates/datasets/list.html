@@ -13,52 +13,6 @@
 <div class="container-fluid mt--6">
   <div class="row">
     <div class="col-xl">
-      <!-- <div class="card">
-        <div class="card-header bg-transparent">
-          <div class="row align-items-center">
-            <div class="col-6">
-              <h6 class="text-uppercase text-muted ls-1 mb-1">Dataset</h6>
-              <h5 class="h3 mb-0">Data</h5>
-            </div>
-            <div class="col-6">
-              <button type="button" class="btn btn-danger float-right" id="js-add-dataset-button" data-toggle="modal"
-                data-target="#js-add-dataset-modal">+</button>
-            </div>
-          </div>
-        </div>
-        <div class="card-body">
-          <div class="row">
-            <div class="col">
-              <div class="table-responsive">
-                <div>
-                  <table class="table align-items-center" id="js-dataset-table">
-                    <thead class="thead-light">
-                      <tr>
-                        <th scope="col">No</th>
-                        {% for header in table_header %}
-                        <th scope="col">{{ header }}</th>
-                        {% endfor %}
-                      </tr>
-                    </thead>
-                    <tbody class="list">
-                      {% for data in table_data %}
-                      <tr>
-                        <td>{{ forloop.counter }}</td>
-                        {% for key, value in data.items %}
-                        {% if key not in 'id, profile' %}
-                        <td>{{ value }}</td>
-                        {% endif %}
-                        {% endfor %}
-                      </tr>
-                      {% endfor %}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div> -->
       <div class="card">
         <div class="card-header bg-transparent">
           <div class="row align-items-center">
@@ -91,10 +45,12 @@
                     <td>{{ data.name }}</td>
                     <td>{{ data.valid_date }}</td>
                     <td>
-                      <button type="button" class="btn btn-primary" id="js-show-dataset-button"
+                      <button type="button" class="btn btn-sm btn-primary" id="js-show-dataset-button"
                         onclick="datasetDetail({{data.id}})"><i class="fas fa-eye"></i></button>
-                      <button type="button" class="btn btn-danger" id="js-delete-dataset-button" data-id="{{data.id}}">
+                      <button type="button" class="btn btn-sm btn-danger" id="js-delete-dataset-button" data-id="{{data.id}}">
                         <i class="fas fa-trash"></i></button>
+                      <button type="button" class="btn btn-sm btn-success" id="js-edit-dataset-button" data-id="{{data.id}}">
+                        <i class="fas fa-edit"></i></button>
                     </td>
                   </tr>
                   {% endfor %}
@@ -152,6 +108,42 @@
           <div class="form-group">
             <label for="dataset-data" class="form-control-label">Dataset Valid Date</label>
             <input type="date" class="form-control" id="dataset-data" name="valid_date" placeholder="Dataset Date"
+              required>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+          <button type="submit" class="btn btn-success">Save dataset</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Modal -->
+<div class="modal fade" id="js-edit-dataset-modal" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle"
+  aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <form id="js-edit-dataset-form">
+        {% csrf_token %}
+        <div class="modal-header">
+          <h5 class="modal-title" id="exampleModalLongTitle">Edit Dataset</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <div class="form-group">
+            <label for="new-dataset-name" class="form-control-label">
+              New Model Name
+            </label>
+            <input type="text" class="form-control" id="edit-dataset-name" name="name"
+              placeholder="Pick a Name For The New Model" required>
+          </div>
+          <div class="form-group">
+            <label for="dataset-data" class="form-control-label">Dataset Valid Date</label>
+            <input type="date" class="form-control" id="edit-dataset-valid-date" name="valid_date" placeholder="Dataset Date"
               required>
           </div>
         </div>

@@ -103,12 +103,16 @@ class DatasetProfileList(views.APIView):
 
 
 class DatasetProfileDetail(mixins.RetrieveModelMixin,
+                           mixins.UpdateModelMixin,
                            generics.GenericAPIView):
     queryset = DatasetProfile.objects.all()
     serializer_class = DatasetProfileSerializer
 
     def get(self, request, *args, **kwargs):
         return self.retrieve(request, *args, **kwargs)
+
+    def put(self, request, *args, **kwargs):
+        return self.update(request, *args, **kwargs)
 
 
 class DatasetDetail(views.APIView):
