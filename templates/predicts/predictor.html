@@ -68,7 +68,7 @@
             <!--form panels-->
             <div class="row">
               <div class="col-12 col-lg-8 m-auto" id="js-form-container">
-                <form class="multisteps-form__form" action="/predicts/predictor/" id="predictor-form">
+                <form class="multisteps-form__form" id="predictor-form">
                   {% csrf_token %}
                   <!--single form panel-->
                   <div class="multisteps-form__panel shadow p-4 rounded bg-white js-active" id="choose-model"
@@ -173,7 +173,7 @@
                     <div class="multisteps-form__content">
                       <div class="form-group">
                         <label for="available-dataset" class="form-control-label">
-                          Available Dataset
+                          Available Training Dataset
                           <i class="fas fa-info-circle" data-toggle="tooltip" data-placement="right"
                             title="Available dataset to be used for training"></i>
                         </label>
@@ -181,14 +181,16 @@
                           <option value="">Select Available Dataset</option>
 
                           {% for data in dataset_profiles_data %}
-                          <option value="{{ data.id }}">{{ data.valid_date }} - {{ data.total_row }} Rows</option>
+                          {% if data.type == 'training' %}
+                          <option value="{{ data.id }}">{{ data.name }}</option>
+                          {% endif %}
                           {% endfor %}
                         </select>
                       </div>
                       <div class="row mb-4">
                         <div class="col-12">
-                          <h3>Dataset Detail</h3>
                           <div id="js-div-dataset-detail" style="display: none">
+                            <h3>Dataset Detail</h3>
                             <span class="row">
                               <span class="col">Total Rows</span>
                               <span class="col float-right" id="js-dataset-total-rows"></span>
@@ -200,34 +202,14 @@
                           </div>
                         </div>
                       </div>
-                      <!-- <div class="custom-control custom-checkbox mb-4">
-                        <input type="checkbox" class="custom-control-input" id="use-my-own-dataset" name="new_dataset">
-                        <label class="custom-control-label" for="use-my-own-dataset">
-                          Use My Own Dataset
-                          <i class="fas fa-info-circle" data-toggle="tooltip" data-placement="right"
-                            title="Use your own dataset to be used for model training"></i>
-                        </label>
+                      <div class="row mb-4">
+                        <div class="col-12">
+                          <p>Add Dataset</p>
+
+                          <button type="button" class="btn btn-success" id="js-add-dataset-training-button"
+                            data-toggle="modal" data-target="#js-add-training-dataset-modal">Add Dataset</button>
+                        </div>
                       </div>
-                      <div class="form-group">
-                        <div class="row">
-                          <div class="col">
-                            <h2>Dataset Template</h2>
-                            <p><a href="{% static 'document/template.xlsx' %}" download> Click to Download Template </a>
-                            </p>
-                          </div>
-                        </div>
-                        <label for="new-dataset-source" class="form-control-label">
-                          New Dataset File
-                          <i class="fas fa-info-circle" data-toggle="tooltip" data-placement="right"
-                            title="Select your dataset if you prefer using your own training dataset"></i>
-                        </label>
-                        <div class="custom-file">
-                          <input type="file" class="custom-file-input" id="new-dataset-source" name="dataset_source"
-                            accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel"
-                            disabled>
-                          <label class="custom-file-label" for="customFileLang"></label>
-                        </div>
-                      </div> -->
                     </div>
                     <div class="button-row d-flex mt-4">
                       <button class="btn btn-primary js-btn-prev" type="button" title="Prev">Prev</button>
@@ -241,6 +223,45 @@
                     <h3 class="multisteps-form__title">Predict Dataset</h3>
                     <div class="multisteps-form__content">
                       <div class="form-group">
+                        <label for="available-testing-dataset" class="form-control-label">
+                          Available Predictable Dataset
+                          <i class="fas fa-info-circle" data-toggle="tooltip" data-placement="right"
+                            title="Available dataset to be predicted"></i>
+                        </label>
+                        <select name="existing_training_dataset" class="form-control" id="available-testing-dataset">
+                          <option value="">Select Available Dataset</option>
+
+                          {% for data in dataset_profiles_data %}
+                          {% if data.type == 'testing' %}
+                          <option value="{{ data.id }}">{{ data.name }}</option>
+                          {% endif %}
+                          {% endfor %}
+                        </select>
+                      </div>
+                      <div class="row mb-4">
+                        <div class="col-12">
+                          <div id="js-div-dataset-testing-detail" style="display: none">
+                            <h3>Dataset Detail</h3>
+                            <span class="row">
+                              <span class="col">Total Rows</span>
+                              <span class="col float-right" id="js-dataset-testing-total-rows"></span>
+                            </span>
+                            <span class="row">
+                              <span class="col">Valid Date</span>
+                              <span class="col float-right" id="js-dataset-testing-valid-date"></span>
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="row mb-4">
+                        <div class="col-12">
+                          <p>Add Dataset</p>
+
+                          <button type="button" class="btn btn-success" id="js-add-dataset-testing-button"
+                            data-toggle="modal" data-target="#js-add-testing-dataset-modal">Add Dataset</button>
+                        </div>
+                      </div>
+                      <!-- <div class="form-group">
                         <div class="row">
                           <div class="col">
                             <h2>Dataset Template</h2>
@@ -258,7 +279,7 @@
                             accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel">
                           <label class="custom-file-label" for="customFileLang"></label>
                         </div>
-                      </div>
+                      </div> -->
                     </div>
                     <div class="button-row d-flex mt-4">
                       <button class="btn btn-primary js-btn-prev" type="button" title="Prev">Prev</button>
@@ -384,7 +405,7 @@
       </div>
     </div>
   </div>
-  <!-- Modal -->
+  <!-- Modal simpan model-->
   <div class="modal fade" id="js-save-model-modal" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle"
     aria-hidden="true">
     <div class="modal-dialog" role="document">
@@ -409,6 +430,116 @@
           <div class="modal-footer">
             <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
             <button type="submit" class="btn btn-success">Save changes</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal simpan dataset training -->
+  <div class="modal fade" id="js-add-training-dataset-modal" tabindex="-1" role="dialog"
+    aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <form id="js-new-training-dataset-form">
+          <input type="hidden" name="type" value="training">
+          {% csrf_token %}
+          <div class="modal-header">
+            <h5 class="modal-title" id="exampleModalLongTitle">Add New Training Dataset</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            <div class="form-group">
+              <label for="new-dataset-name" class="form-control-label">
+                New Model Name
+              </label>
+              <input type="text" class="form-control" id="new-dataset" name="name"
+                placeholder="Pick a Name For The New Model" required>
+            </div>
+            <div class="form-group">
+              <div class="row">
+                <div class="col">
+                  <h2>Dataset Template</h2>
+                  <p><a href="{% static 'document/template.xlsx' %}" download> Click to Download Template </a>
+                  </p>
+                </div>
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="dataset-source" class="form-control-label">Dataset File</label>
+              <div class="custom-file">
+                <input type="file" class="custom-file-input" id="dataset-source" name='source_file'
+                  accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel"
+                  required>
+                <label class="custom-file-label" for="customFileLang">Select file</label>
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="dataset-data" class="form-control-label">Dataset Valid Date</label>
+              <input type="date" class="form-control" id="dataset-data" name="valid_date" placeholder="Dataset Date"
+                required>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            <button type="submit" class="btn btn-success">Save dataset</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal simpan dataset testing -->
+  <div class="modal fade" id="js-add-testing-dataset-modal" tabindex="-1" role="dialog"
+    aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <form id="js-new-testing-dataset-form">
+          <input type="hidden" name="type" value="testing">
+          {% csrf_token %}
+          <div class="modal-header">
+            <h5 class="modal-title" id="exampleModalLongTitle">Add New Predictable Dataset</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            <div class="form-group">
+              <label for="new-dataset-name" class="form-control-label">
+                New Model Name
+              </label>
+              <input type="text" class="form-control" id="new-dataset" name="name"
+                placeholder="Pick a Name For The New Model" required>
+            </div>
+            <div class="form-group">
+              <div class="row">
+                <div class="col">
+                  <h2>Dataset Template</h2>
+                  <p><a href="{% static 'document/template.xlsx' %}" download> Click to Download Template </a>
+                  </p>
+                </div>
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="dataset-source" class="form-control-label">Dataset File</label>
+              <div class="custom-file">
+                <input type="file" class="custom-file-input" id="dataset-source" name='source_file'
+                  accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel"
+                  required>
+                <label class="custom-file-label" for="customFileLang">Select file</label>
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="dataset-data" class="form-control-label">Dataset Valid Date</label>
+              <input type="date" class="form-control" id="dataset-data" name="valid_date" placeholder="Dataset Date"
+                required>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            <button type="submit" class="btn btn-success">Save dataset</button>
           </div>
         </form>
       </div>

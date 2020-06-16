@@ -7,11 +7,11 @@ from rest_framework.exceptions import ValidationError
 class DatasetProfileSerializer(serializers.ModelSerializer):
     name = serializers.CharField(required=True, allow_blank=False)
     valid_date = serializers.DateField(required=True)
-    source_file = serializers.FileField(required=True)
+    # source_file = serializers.FileField(required=True)
 
     class Meta:
         model = DatasetProfile
-        fields = ('id', 'name', 'valid_date', 'source_file', 'created_at', 'updated_at')
+        fields = '__all__'
 
 
 class ModelMachineLearningSerializer(serializers.ModelSerializer):

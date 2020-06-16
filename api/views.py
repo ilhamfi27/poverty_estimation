@@ -66,6 +66,7 @@ class DatasetProfileList(views.APIView):
         if serializer.is_valid():
             name = request.data["name"]
             valid_date = request.data["valid_date"]
+            type = request.data["type"]
             source_file = request.FILES['source_file']
 
             file_extension = repr(str(source_file).split('.')[-1])
@@ -73,7 +74,8 @@ class DatasetProfileList(views.APIView):
             dataframe_data = np.nan_to_num(dataframe.iloc[0:, :].values)
             total_row = len(dataframe_data)
 
-            dataset_profile = DatasetProfile.objects.create(name=name, valid_date=valid_date, total_row=total_row)
+            dataset_profile = DatasetProfile.objects.create(name=name, valid_date=valid_date, total_row=total_row,
+                                                            type=type)
 
             source_data = []
             for row in dataframe_data:
@@ -89,7 +91,9 @@ class DatasetProfileList(views.APIView):
                 self.dataset_insert(zipped_data)
 
             serialized = serializer.data
+            serialized['id'] = dataset_profile.id
             serialized['created_at'] = dataset_profile.created_at
+            serialized['type'] = dataset_profile.type
             return Response(serialized, status=st.HTTP_201_CREATED)
 
         return Response(serializer.errors, status=st.HTTP_400_BAD_REQUEST)
@@ -121,7 +125,6 @@ class DatasetDetail(views.APIView):
             'dataset_data': dataset_data
         }
         return Response(response, status=st.HTTP_200_OK)
-
 
     def delete(self, request, *args, **kwargs):
         dataset_profile = self.queryset.get(pk=kwargs['pk'])
@@ -159,6 +162,7 @@ class Predictor(views.APIView):
 
         # normal input
         existing_dataset = request.data["existing_dataset"]
+        existing_training_dataset = request.data["existing_training_dataset"]
 
         response = {}
         if not validate_request(request):
@@ -166,8 +170,8 @@ class Predictor(views.APIView):
             response["message"] = ["Failed to predict due to incompatible data input"]
             return Response(response, status=st.HTTP_400_BAD_REQUEST)
 
-        dataset_predict = request.FILES['dataset_predict']
-        training_dataframe = pd.read_excel(dataset_predict)
+        dataset_training_profile = DatasetProfile.objects.get(pk=existing_training_dataset)
+        dataset_training_data = Dataset.objects.filter(profile=dataset_training_profile)
 
         # get model -
         # get dataset testing -
@@ -191,7 +195,7 @@ class Predictor(views.APIView):
             ]
 
             result, city_result = svr.load_model(
-                dataframe=training_dataframe,
+                dataset=dataset_training_data,
                 features=best_feature_list,
                 url=full_model_file_path)
 
@@ -355,7 +359,7 @@ class Predictor(views.APIView):
                 model = MachineLearningModel.objects.get(pk=existing_model)
 
                 result, city_result = svr.load_model(
-                    dataframe=training_dataframe,
+                    dataset=dataset_training_data,
                     features=Conversion.to_list(Conversion, model.ranked_index),
                     url=model.dumped_model)
 

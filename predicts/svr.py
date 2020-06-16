@@ -177,14 +177,24 @@ def trainf(X, y, C=1.0, epsilon=0.1):
     return best_pred, [best_score, lowest_error, best_feature_num, best_regressor], result, ten_column_predictions
 
 
-def load_model(features=None, dataframe=None, regressor=None, url=None):
+def load_model(features=None, dataframe=None, dataset=None, regressor=None, url=None):
     sc = MinMaxScaler(feature_range=(0,10))
 
     sorted_feature = []
 
-    df = pd.DataFrame(dataframe)
-    city_id = np.asarray(df['city_id'])
-    raw_X = np.asarray(df.loc[:, 'sum_price_car':'std_buyer_land_rent'])  # features
+    if dataset:
+        dataset_data = [model_to_dict(data) for data in dataset]
+
+        df = pd.DataFrame(dataset_data)
+
+        city_id = np.asarray(df['city'])
+        raw_X = np.asarray(df.loc[:, 'sum_price_car':'std_buyer_land_rent'])  # features
+
+    if dataframe:
+        df = pd.read_excel(dataframe)
+
+        city_id = np.asarray(df['city_id'])
+        raw_X = np.asarray(df.loc[:, 'sum_price_car':'std_buyer_land_rent'])  # features
 
     # 2. pre-processing
     clean_X = np.nan_to_num(raw_X)

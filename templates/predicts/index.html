@@ -5,9 +5,9 @@
 <link rel="stylesheet" href="{% static 'leaflet/leaflet.css' %}" type="text/css">
 <script src="{% static 'leaflet/leaflet.js' %}"></script>
 <style>
-    #java-island {
-        height: 350px;
-    }
+  #java-island {
+    height: 350px;
+  }
 </style>
 {% endblock %}
 
@@ -15,135 +15,272 @@
 {% load static %}
 <!-- Page content -->
 <div class="container-fluid mt--6">
-    <div class="row">
-        <div class="col-xl">
-            <div class="card">
-                <div class="card-header bg-transparent">
-                    <div class="row align-items-center">
-                        <div class="col">
-                            <h6 class="text-uppercase text-muted ls-1 mb-1">Javanese Island Poverty Mapping</h6>
-                            <h5 class="h3 mb-0"></h5>
-                        </div>
-                    </div>
-                </div>
-                <div class="card-body">
-                    <div id="java-island"></div>
-                </div>
+  <div class="row">
+    <div class="col-xl">
+      <div class="card">
+        <div class="card-header bg-transparent">
+          <div class="row align-items-center">
+            <div class="col-9">
+              <h1>Machine Learning For Poverty Prediction</h1>
             </div>
+            <div class="col-3">
+              <a href="/?lang=id"><button type="button" class="btn btn-sm btn-danger float-right">ID</button></a>
+              <a href="/?lang=en"><button type="button" class="btn btn-sm btn-primary float-right">EN</button></a>
+            </div>
+          </div>
         </div>
-    </div>
-    <div class="row">
-        <div class="col-xl-7">
-            <div class="card">
-                <div class="card-header">
-                    <div class="row align-items-center">
-                        <div class="col">
-                            <h6 class="text-light text-uppercase ls-1 mb-1">Cities Poverty Rate</h6>
-                            <h5 class="h3 mb-0"></h5>
-                        </div>
-                        <div class="col">
-                        </div>
-                    </div>
-                </div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col">
+              <p>Poverty is a problem that occurs in every country, especially in Indonesia. Common method used to
+                predict poverty in Indonesia is conducting a survey. However, the survey process needs a long time and
+                uses a lot of human resources. Some policies taken by government require actual data and not just
+                socio-economic survey data. Therefore, a special mechanism is needed to predict poverty data more
+                quickly. Hence, poverty prediction support system using machine learning and data from one of the
+                e-commerce sites in Indonesia was developed to support the government socio-economic survey. Dataset
+                used in this study is e-commerce dataset with high data dimension. Therefore, we used
+                <strong>Statistical-based Feature Selection</strong> algorithm such as <strong>F-Score</strong>,
+                <strong>Chi-square</strong> and <strong>Correlation-based Feature Selection (CFS)</strong> to get the
+                best feature from the dataset and of course this application used machine learning algorithm
+                <strong>Support Vector Regression</strong> for prediction.</p>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col">
+              <div class="nav-wrapper">
+                <ul class="nav nav-pills nav-fill flex-column flex-md-row" id="tabs-icons-text" role="tablist">
+                  <li class="nav-item">
+                    <a class="nav-link mb-sm-3 mb-md-0 active" id="tabs-icons-text-1-tab" data-toggle="tab"
+                      href="#tabs-icons-text-1" role="tab" aria-controls="tabs-icons-text-1" aria-selected="true">
+                      <i class="ni ni-cloud-upload-96 mr-2"></i>Poverty</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link mb-sm-3 mb-md-0" id="tabs-icons-text-2-tab" data-toggle="tab"
+                      href="#tabs-icons-text-2" role="tab" aria-controls="tabs-icons-text-2" aria-selected="true">
+                      <i class="ni ni-cloud-upload-96 mr-2"></i>Support Vector Regression</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link mb-sm-3 mb-md-0" id="tabs-icons-text-3-tab" data-toggle="tab"
+                      href="#tabs-icons-text-3" role="tab" aria-controls="tabs-icons-text-3" aria-selected="false">
+                      <i class="ni ni-bell-55 mr-2"></i>Statistical-based Feature Selection</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link mb-sm-3 mb-md-0" id="tabs-icons-text-4-tab" data-toggle="tab"
+                      href="#tabs-icons-text-4" role="tab" aria-controls="tabs-icons-text-4" aria-selected="false">
+                      <i class="ni ni-bell-55 mr-2"></i>E-Commerce Dataset</a>
+                  </li>
+                </ul>
+              </div>
+              <div class="card shadow">
                 <div class="card-body">
-                    <div class="table-responsive table-hover point_row_table">
-                        <div>
-                            <table class="table align-items-center" id="js-poverty-result">
-                                <thead class="thead-light">
-                                    <tr>
-                                        <th scope="col">No</th>
-                                        <th scope="col">City</th>
-                                        <th scope="col">Poverty Rate</th>
-                                    </tr>
-                                </thead>
-                                <tbody class="list">
-                                    {% for data in prediction_result %}
-                                    <tr>
-                                        <td scope="col">{{ forloop.counter }}</td>
-                                        <td scope="col">{{ data.city.name }}</td>
-                                        <td scope="col">{{ data.result }}</td>
+                  <div class="tab-content" id="myTabContent">
+                    <div class="tab-pane fade show active" id="tabs-icons-text-1" role="tabpanel"
+                      aria-labelledby="tabs-icons-text-1-tab">
+                      <p>To measure poverty in Indonesia, BPS uses the concept of ability to meet basic needs (basic
+                        needs approach). With this approach, poverty is seen as an inability on the economic side to
+                        meet basic food and non-food needs as measured by expenditure. So the poor population is the
+                        population that has an average monthly per capita expenditure under the poverty line.</p>
+                      <p>The main data source used is the Social Economic Survey module on consumption and expenditure
+                        modules. In calculating the poverty line is to use the poverty line calculation formula (GK).
+                        Provisions for determining the poverty line are to use the following concept.</p>
+                      <ol>
+                        <li>
+                          <p>The poverty line (GK) is the sum of the food poverty line with the non food poverty line.
+                            Residents who have an average monthly per capita expenditure under the poverty line are
+                            categorized as poor people.</p>
+                        </li>
+                        <li>
+                          <p>Food Poverty Line (FPL) is the value of minimum food expenditure equivalent to 2100
+                            kilocalories per capita per day. Commodity packages of basic food needs are represented by
+                            52 types of commodities such as grains, tubers, fish, meat, eggs and milk, vegetables, nuts,
+                            fruits, oils and fats, etc..</p>
+                        </li>
+                        <li>
+                          <p>Non-Food Poverty Line (NFPL) is the minimum need for housing, clothing, education and
+                            health. Commodity packages of basic non-food necessities are represented by 51 types of
+                            commodities in urban areas and 47 types of commodities in rural areas.</p>
+                        </li>
+                      </ol>
+                      <p>The poverty line calculation is as follows </p>
+                      <center>
+                        GK = GKM + GKNM <br> <br>
+                        GK = Garis Kemiskinan <br>
+                        GKM = Garis Kemiskinan Makanan <br>
+                        GKNM = Garis Kemiskinan Non Makan <br>
+                      </center>
+                      <p>The following is a technique for calculating Food Poverty Line.</p>
+                      <ol>
+                        <li>
+                          <p>The first stage is to determine the reference group, which is 20 percent of the population
+                            above the Temporary Poverty Line (GKS). This reference group is defined as a marginal class
+                            population. GKS is calculated based on the previous period GK which is inflated with general
+                            inflation (CPI). From this reference population, the Food Poverty Line (GKM) and Non-Food
+                            Poverty Line (GKNM) are calculated..</p>
+                        </li>
+                        <li>
+                          <p>Food Poverty Line (GKM) is the total expenditure value of 52 basic food commodities that
+                            are actually consumed by the reference population which is then equated with 2100
+                            kilocalories per capita per day. This benchmark refers to the results of the 1978 Food and
+                            Nutrition Study. The equalization of the expenditure of minimum food needs is done by
+                            calculating the average calorie price of the 52 commodities.</p>
+                        </li>
+                      </ol>
+                      <p>The following basic formula is used in calculating QCC.</p>
+                      <center>
+                        <img src="{% static 'document/gkm.png' %}" alt="SVR Ilustration"
+                          class="img-responsive mt-3 mb-3">
+                      </center>
+                      <p>where:<br>
+                        <i>GKM * <sub>jp</sub></i> = egional food poverty line j (before being equalized to 2100
+                        kilocalories) of the province.<br>
+                        <i>P<sub>jkp</sub></i> = Average price of commodity k in j and provincial p.<br>
+                        <i>Q<sub>jkp</sub></i> = Average quantity of commodity k consumed in area j and province p.<br>
+                        <i>V<sub>jkp</sub></i> = Value of expenditure for consumption of commodity k in area j and
+                        province p.<br>
+                        <i>j</i> = Region (urban and rural)<br>
+                        <i>p</i> = Province<br>
+                        Furthermore, the QCC will be equated with 2100 kilocalories by multiplying 2100 to the implicit
+                        average calorie price by area j of the reference population, so that:
+                      </p>
+                      <center>
+                        <img src="{% static 'document/hk.png' %}" alt="SVR Ilustration"
+                          class="img-responsive mt-3 mb-3">
+                      </center>
+                      <p>where:<br>
+                        <i>K<sub>jkp</sub></i> = Calories from commodity k in area j in province p<br>
+                        <i>HK<sub>jp</sub></i> = Average calorie price in area j in province p<br>
+                        Non-Food Poverty Line (NFPL) is the sum of the value of the minimum needs of selected non-food
+                        commodities which include housing, clothing, education and health. The following is the formula
+                        for calculating the QCC:
+                      </p>
+                      <center>
+                        <img src="{% static 'document/gknm.png' %}" alt="SVR Ilustration"
+                          class="img-responsive mt-3 mb-3">
+                      </center>
+                      <p>where:<br>
+                        <i>GKNM<sub>jp</sub></i> = minimum non-food expenditure or regional non-food poverty line j and province p<br>
+                        <i>V<sub>kjp</sub></i> = Value of expenditure per commodity / non-food sub-group j and provincial p<br>
+                        <i>r<sub>kj</sub></i> = ratio of expenditure of non-food commodities / sub-groups k by region (2004 SPKKD results) and j<br>
+                        <i>k<sub></sub></i> = type of non-food commodity selectedh<br>
+                        <i>j<sub></sub></i> = Region (urban or rural)<br>
+                        <i>p<sub></sub></i> = Province p<br>
+                      </p>
+                    </div>
+                    <div class="tab-pane fade" id="tabs-icons-text-2" role="tabpanel"
+                      aria-labelledby="tabs-icons-text-1-tab">
+                      <h2>Support Vector Vegression (SVR)</h2>
+                      <p>Support vector regression (SVR) is a development of support vector machines (SVM) for
+                        regression cases. SVM is a machine
+                        learning algorithm that handles prediction cases with labels in the form of rounded or classy
+                        grades, such as predicting beef quality with several categories, predicting 3-dimensional
+                        objects, or predicting someone mood when listened to audio. These cases use a dataset with
+                        labels that are round or class-value so the support vector algorithm can be used for handling
+                        prediction with those lables.
+                      </p>
+                      <p>First of all, vector support regression was proposed by Vapnik, Steven Golowich, and Alex Smola
+                        in
+                        1997. Support vector regression algorithm works similarly to support vector machines (SVM)
+                        by finding a function f(x) regression to form a hyperplane that matches the input data with an
+                        error (ε) and minimize error (ε) so the prediction result will be more convenient.</p>
+                      <center>
+                        <img src="{% static 'document/svr_ilustration.png' %}" alt="SVR Ilustration"
+                          class="img-responsive mt-3 mb-3">
+                      </center>
+                      <p>The picture above shows the distribution of predictive data from the label (y) of an
+                        independent variable (x). The illustration shows the data dimension is one-dimensional space so
+                        that the formed hyperplane is a line. Because SVR handles continuous output data, which means
+                        the value of the output has unlimited possibilities, then it is handled by the SVR using a
+                        tolerance margin with a value of ε. Data inside the tolerance margin is not counted as an error
+                        and vice versa. Values that fall outside the tolerance margin are expressed as deviations by the
+                        slack variable (ξ).</p>
+                      <p>Considering a training dataset, &#123;(<i>x<sub>1</sub></i>, <i>y<sub>1</sub></i>), ...,
+                        (<i>x<sub>i</sub></i>, <i>y<sub>i</sub></i>)&#125; that corresponds to features where
+                        <i>x<sub>i</sub></i>, <i>y<sub>i</sub></i> are feature vector and target output, respectively.
+                        The standard criteria of SVR are given below.</p>
+                      <center>
+                        <img src="{% static 'document/svr_formula_1.png' %}" alt="SVR Ilustration"
+                          class="img-responsive mt-3 mb-3">
+                      </center>
+                      <p>where w,C,ξ,ε, and b as slope matrix, regularization parameter slack variable for soft margin,
+                        tolerance margin, and the intercept/bias respectively. Where α - α<sup>*</sup>> denotes
+                        Lagrangian multipliers</p>
+                      <center>
+                        <img src="{% static 'document/svr_formula_2.png' %}" alt="SVR Ilustration"
+                          class="img-responsive mt-3 mb-3">
+                      </center>
+                      <p>The approximate function after solving problem above is</p>
+                      <center>
+                        <img src="{% static 'document/svr_formula_3.png' %}" alt="SVR Ilustration"
+                          class="img-responsive mt-3 mb-3">
+                      </center>
+                      <p>the output from the model is α^*- α.</p>
+                    </div>
+                    <div class="tab-pane fade" id="tabs-icons-text-3" role="tabpanel"
+                      aria-labelledby="tabs-icons-text-2-tab">
+                      <h2>Feature Selection</h2>
+                      <p>High data dimensions will affect the performance of algorithms that was designed to account
+                        data with low dimensions. Also, with a large number of features, it will make the performance of
+                        the learning model decreases and can also reduce performance on the calculation of not visible
+                        data. Feature selection will improve learning performance, increase calculation efficiency,
+                        reduce memory storage and build better models. Feature selection in conventional data mining can
+                        be grouped into similarity-based, information-theoritical-based, sparse-learning-based, and
+                        statistical-based methods as well as other methods related to the techniques used.</p>
+                      <h2>Statistical-based Feature Selection</h2>
+                      <p>Feature selection algorithms are based on different statistical sizes, because of they rely on
+                        varied statistical sizes. Many of them use filter-based methods. In addition, most
+                        statistical-based algorithms analyze features individually. Below are some feature selection
+                        algorithms that are representative of the statistical-based algorithm category.</p>
+                      <ol>
+                        <li>Chi-square (Chi<sup>2</sup>)</li>
+                        <p>Chi-square calculates the relevance of features to labels. The higher the chi-square value
+                          the more information from the label carried by the feature and the more relevant the feature
+                          is to the label. The chi-square equation can be seen as follows.</p>
+                        <center>
+                          <img src="{% static 'document/chi_square_formula.png' %}" alt="Chi-square"
+                            class="img-responsive mt-3 mb-3">
+                        </center>
 
-                                    </tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
-                        </div>
+                        <li>F-Score</li>
+                        <p>F-Score known as a simple technique for calculating discrimination from two sets of real
+                          numbers with training vectors are <i>x<sub>k</sub></i>, <i>k</i> = 1, 2, ..., <i>n</i></p>
+                        <center>
+                          <img src="{% static 'document/f_score_formula.png' %}" alt="F-Score"
+                            class="img-responsive mt-3 mb-3">
+                        </center>
+
+                        <li>Correlation-based Feature Selection (CFS)</li>
+                        <p>The main idea of CFS is to use correlation-based heuristics to evaluate the value of feature
+                          subsets</p>
+                        <center>
+                          <img src="{% static 'document/cfs_formula.png' %}" alt="Correlation-based Feature Selection"
+                            class="img-responsive mt-3 mb-3">
+                        </center>
+                      </ol>
                     </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-xl-5">
-            <div class="card">
-                <div class="card-header">
-                    <div class="row align-items-center">
-                        <div class="col">
-                            <h6 class="text-light text-uppercase ls-1 mb-1">Predicted</h6>
-                            <h5 class="h3 mb-0"></h5>
-                        </div>
-                        <div class="col">
-                        </div>
+                    <div class="tab-pane fade" id="tabs-icons-text-4" role="tabpanel"
+                      aria-labelledby="tabs-icons-text-3-tab">
+                      <p>The data used for building machine learning model is OLX e-commerce data in 2016 from Pulselab
+                        Jakarta. Transaction data used is grouped based on cities on Java island. From the data several
+                        items and aspects are selected. The item selected are cars, motorcycles, houses, apartments, and
+                        land. From each item reviewed, the assessed aspects can be calculated from the data such as
+                        price, items sold, advertisements viewed and buyers.</p>
+                      <center>
+                        <img src="{% static 'document/inside_dataset.png' %}" alt="Inside Dataset"
+                          class="img-responsive mt-3 mb-3">
+                      </center>
+                      <p>For each aspect of the item, the aggregation value such as average, sum, and standard deviation
+                        is calculated. it makes total column in this dataset is 96 columns</p>
                     </div>
+                  </div>
                 </div>
-                <div class="card-body">
-                    <img src="data:image/png;base64,{{ best_plot|safe }}" alt="" class="img-fluid">
-                </div>
+              </div>
             </div>
+          </div>
         </div>
+      </div>
     </div>
-    <!-- <div class="row">
-        <div class="col-xl-4">
-            <div class="card">
-                <div class="card-header">
-                    <div class="row align-items-center">
-                        <div class="col">
-                            <h6 class="text-light text-uppercase ls-1 mb-1">Last Prediction Result</h6>
-                            <h5 class="h3 mb-0">F-Score</h5>
-                        </div>
-                        <div class="col">
-                        </div>
-                    </div>
-                </div>
-                <div class="card-body">
-                    <img src="data:image/png;base64,{{ f_score_plot|safe }}" alt="" class="img-fluid">
-                </div>
-            </div>
-        </div>
-        <div class="col-xl-4">
-            <div class="card">
-                <div class="card-header">
-                    <div class="row align-items-center">
-                        <div class="col">
-                            <h6 class="text-light text-uppercase ls-1 mb-1">Last Prediction Result</h6>
-                            <h5 class="h3 mb-0">Chi-Square</h5>
-                        </div>
-                        <div class="col">
-                        </div>
-                    </div>
-                </div>
-                <div class="card-body">
-                    <img src="data:image/png;base64,{{ chi_square_plot|safe }}" alt="" class="img-fluid">
-                </div>
-            </div>
-        </div>
-        <div class="col-xl-4">
-            <div class="card">
-                <div class="card-header">
-                    <div class="row align-items-center">
-                        <div class="col">
-                            <h6 class="text-light text-uppercase ls-1 mb-1">Last Prediction Result</h6>
-                            <h5 class="h3 mb-0">CFS</h5>
-                        </div>
-                        <div class="col">
-                        </div>
-                    </div>
-                </div>
-                <div class="card-body">
-                    <img src="data:image/png;base64,{{ cfs_plot|safe }}" alt="" class="img-fluid">
-                </div>
-            </div>
-        </div>
-    </div> -->
-    {% include 'footer.html' %}
+  </div>
+  {% include 'footer.html' %}
 </div>
 {% endblock %}
 
@@ -151,66 +288,5 @@
 <script src="{% static 'admin_argon/assets/vendor/datatables.net/js/jquery.dataTables.min.js' %}"></script>
 <script src="{% static 'admin_argon/assets/vendor/datatables.net-bs4/js/dataTables.bootstrap4.min.js' %}"></script>
 <script>
-    $(document).ready(function () {
-        var mymap = L.map('java-island').setView([-7.166, 109.852], 7);
-        mapLayer(mymap);
-        mapMarkers(mymap);
-        dataTableInit();
-    });
-    function dataTableInit(params) {
-        $('#js-poverty-result').dataTable({
-            'pageLength': 5,
-        });
-    }
-    function mapLayer(mymap) {
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-        }).addTo(mymap);
-    }
-    function mapMarkers(mymap) {
-        $.ajax({
-            url: '/predicts/api/mapping_result/',
-            method: 'GET',
-            success: function (res) {
-                setMarkers(res.data, mymap)
-            },
-        });
-    }
-    function setMarkers(response, mymap) {
-        response.forEach(res => {
-            let myMarker = L.marker([res.latitude, res.longitude]);
-            let icon = myMarker.options.icon;
-            icon.options.iconSize = [12, 20];
-            icon.options.iconAnchor = [6, 20];
-            icon.options.popupAnchor = [1, -34]
-            icon.options.tooltipAnchor = [16, -28]
-            icon.options.shadowSize = [20, 20]
-
-            myMarker.setIcon(icon);
-            myMarker.addTo(mymap);
-
-            
-            let content = `
-            <p>City Name: ${res.city_name}</p>
-            <p>Poverty Rate (%): ${res.poverty_rate}</p>
-            `;
-
-            myMarker.bindPopup(content);
-
-            myMarker.on('mouseover', function (e) {
-                // let content = `
-                // <p>City Name: ${res.city_name}</p>
-                // <p>Poverty Rate (%): ${res.poverty_rate}</p>
-                // `;
-                // var popup = L.popup()
-                //     .setLatLng(e.latlng) 
-                //     .setContent(content)
-                //     .openOn(mymap);
-            });
-            myMarker.on('mouseout', function (e) {
-
-            });
-        });
-    }
 </script>
 {% endblock %}

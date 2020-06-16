@@ -8,6 +8,7 @@ const useDefaultModel = $("#use-default-model");
 
 const useMyOwnDatasetCheckbox = $("#use-my-own-dataset");
 const availableDatasetSelect = $("#available-dataset");
+const availableTestingDatasetSelect = $("#available-testing-dataset");
 const newDatasetSourceFile = $("#new-dataset-source");
 
 const chooseModel = $("choose-model");
@@ -278,7 +279,6 @@ function dataTableInit() {
 function formSubmit() {
   $("#predictor-form").submit(function (e) {
     e.preventDefault();
-    const url = $(this).prop("action");
 
     $.ajax({
       url: `${appUrl}/api/v1/predict/`,
@@ -292,7 +292,29 @@ function formSubmit() {
         processAjaxResponse(res);
       },
       error: function (err) {
-        if (err.status != 500){
+        if (err.status != 500) {
+          showErrorModal(err.responseJSON.message);
+        }
+      }
+    });
+  });
+
+  $("#js-new-training-dataset-form, #js-new-testing-dataset-form").submit(function (e) {
+    e.preventDefault();
+
+    $.ajax({
+      url: `${appUrl}/api/v1/dataset_profile/`,
+      method: 'POST',
+      data: new FormData(this),
+      dataType: 'json',
+      contentType: false,
+      cache: false,
+      processData: false,
+      success: function (res) {
+        newTrainingDatasetAjaxResponse(res);
+      },
+      error: function (err) {
+        if (err.status != 500) {
           showErrorModal(err.responseJSON.message);
         }
       }
@@ -380,6 +402,28 @@ function storeImportantData(res) {
 
   sessionStorage.setItem('prediction_data', JSON.stringify(res));
 }
+
+function newTrainingDatasetAjaxResponse(res) {
+  $('#js-add-training-dataset-form').each(function () {
+    this.reset();
+  });
+  $('#js-add-training-dataset-modal').modal('hide');
+  $('#js-add-testing-dataset-modal').modal('hide');
+
+  if (res.type == "training") {
+    availableDatasetSelect.append(`<option value="${res.id}">${res.name}</option>`);
+  } else {
+    availableTestingDatasetSelect.append(`<option value="${res.id}">${res.name}</option>`);
+  }
+
+  Swal.fire(
+    "Saved!",
+    "Dataset Has Been Saved",
+    "success"
+  );
+}
+
+
 /**
  * ===============================================
  * 
@@ -431,7 +475,7 @@ function savingModel() {
         respondToSavedModel(res);
       },
       error: function (err) {
-        if (err.status != 500){
+        if (err.status != 500) {
           showErrorModal(err.responseJSON.message);
         }
       }
@@ -452,7 +496,7 @@ function respondToSavedModel(res) {
     "Model Has Been Saved",
     "success"
   );
-  
+
 }
 
 /**
@@ -613,6 +657,25 @@ function getDatasetDetail() {
           $("#js-div-dataset-detail").css({ "display": "block" });
           $("#js-dataset-total-rows").text(response.total_row);
           $("#js-dataset-valid-date").text(response.valid_date);
+        },
+        error: function (e) {
+          console.log(e);
+        }
+      })
+    }
+  });
+  availableTestingDatasetSelect.change(function (e) {
+    const datasetId = $(this).val();
+    if (datasetId != "" || datasetId != null || datasetId != undefined) {
+      $.ajax({
+        url: appUrl + `/api/v1/dataset_profile/${datasetId}`,
+        method: 'GET',
+        success: function (res) {
+          const response = res;
+
+          $("#js-div-dataset-testing-detail").css({ "display": "block" });
+          $("#js-dataset-testing-total-rows").text(response.total_row);
+          $("#js-dataset-testing-valid-date").text(response.valid_date);
         },
         error: function (e) {
           console.log(e);

@@ -70,9 +70,11 @@ def new(request):
         return render(request, 'datasets/new.html', {})
 
 
-def list(request):
+def list(request, *args, **kwargs):
     table_header = dataset_column_names
-    dataset_profiles = DatasetProfile.objects.order_by('-valid_date')
+
+    dataset_type = kwargs["type"]
+    dataset_profiles = DatasetProfile.objects.filter(type=dataset_type).order_by('-valid_date')
 
     table_data = Dataset.objects.filter(profile=dataset_profiles.first())
 
@@ -83,6 +85,7 @@ def list(request):
         'dataset_profile': dataset_profiles.first(),
         'table_header': table_header,
         'table_data': dataset_data,
+        'type': dataset_type,
     }
 
     return render(request, 'datasets/list.html', context)

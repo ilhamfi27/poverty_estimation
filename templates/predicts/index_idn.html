@@ -1,0 +1,301 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block head_css %}
+<link rel="stylesheet" href="{% static 'leaflet/leaflet.css' %}" type="text/css">
+<script src="{% static 'leaflet/leaflet.js' %}"></script>
+<style>
+  #java-island {
+    height: 350px;
+  }
+</style>
+{% endblock %}
+
+{% block page_content %}
+{% load static %}
+<!-- Page content -->
+<div class="container-fluid mt--6">
+  <div class="row">
+    <div class="col-xl">
+      <div class="card">
+        <div class="card-header bg-transparent">
+          <div class="row align-items-center">
+            <div class="col-9">
+              <h1>Machine Learning Untuk Memprediksi Kemiskinan</h1>
+            </div>
+            <div class="col-3">
+              <a href="/?lang=id"><button type="button" class="btn btn-sm btn-danger float-right">ID</button></a>
+              <a href="/?lang=en"><button type="button" class="btn btn-sm btn-primary float-right">EN</button></a>
+            </div>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col">
+              <p>Kemiskinan adalah masalah yang terjadi di setiap negara, terutama di Indonesia. Metode umum yang
+                digunakan untuk memprediksi kemiskinan di Indonesia adalah melakukan survei. Namun, proses survei
+                membutuhkan waktu yang lama dan menggunakan banyak sumber daya manusia. Beberapa kebijakan yang diambil
+                oleh pemerintah memerlukan data aktual dan bukan hanya data survei sosial ekonomi. Karena itu,
+                diperlukan mekanisme khusus untuk memprediksi data kemiskinan dengan lebih cepat. Oleh karena itu,
+                sistem pendukung prediksi kemiskinan menggunakan pembelajaran mesin dan data dari salah satu situs
+                e-commerce di Indonesia dikembangkan untuk mendukung survei sosial-ekonomi pemerintah. Dataset yang
+                digunakan dalam penelitian ini adalah dataset e-commerce dengan dimensi data tinggi. Oleh karena itu,
+                kami menggunakan algoritma <strong>Statistical-based Feature Selection</strong> seperti
+                <strong>F-Score</strong>, <strong>Chi-square</strong> dan <strong>Correlation-based Feature Selection
+                  (CFS)</strong> untuk mendapatkan fitur terbaik dari dataset dan tentu saja aplikasi ini menggunakan
+                algoritma pembelajaran mesin <strong>Support Vector Regression</strong> untuk prediksi .</p>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col">
+              <div class="nav-wrapper">
+                <ul class="nav nav-pills nav-fill flex-column flex-md-row" id="tabs-icons-text" role="tablist">
+                  <li class="nav-item">
+                    <a class="nav-link mb-sm-3 mb-md-0 active" id="tabs-icons-text-1-tab" data-toggle="tab"
+                      href="#tabs-icons-text-1" role="tab" aria-controls="tabs-icons-text-1" aria-selected="true">
+                      <i class="ni ni-cloud-upload-96 mr-2"></i>Kemiskinan</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link mb-sm-3 mb-md-0" id="tabs-icons-text-2-tab" data-toggle="tab"
+                      href="#tabs-icons-text-2" role="tab" aria-controls="tabs-icons-text-2" aria-selected="true">
+                      <i class="ni ni-cloud-upload-96 mr-2"></i>Support Vector Regression</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link mb-sm-3 mb-md-0" id="tabs-icons-text-3-tab" data-toggle="tab"
+                      href="#tabs-icons-text-3" role="tab" aria-controls="tabs-icons-text-3" aria-selected="false">
+                      <i class="ni ni-bell-55 mr-2"></i>Statistical-based Feature Selection</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link mb-sm-3 mb-md-0" id="tabs-icons-text-4-tab" data-toggle="tab"
+                      href="#tabs-icons-text-4" role="tab" aria-controls="tabs-icons-text-4" aria-selected="false">
+                      <i class="ni ni-bell-55 mr-2"></i>E-Commerce Dataset</a>
+                  </li>
+                </ul>
+              </div>
+              <div class="card shadow">
+                <div class="card-body">
+                  <div class="tab-content" id="myTabContent">
+                    <div class="tab-pane fade show active" id="tabs-icons-text-1" role="tabpanel"
+                      aria-labelledby="tabs-icons-text-1-tab">
+                      <p>Untuk mengukur kemiskinan, BPS menggunakan konsep kemampuan memenuhi kebutuhan dasar (basic
+                        needs approach). Dengan pendekatan ini, kemiskinan dipandang sebagai ketidakmampuan dari sisi
+                        ekonomi untuk memenuhi kebutuhan dasar makanan dan bukan makanan yang diukur dari sisi
+                        pengeluaran. Jadi Penduduk Miskin adalah penduduk yang memiliki rata-rata pengeluaran perkapita
+                        perbulan dibawah garis kemiskinan </p>
+                      <p>Sumber data utama yang digunakan adalah data Survei Sosial Ekonomi modul konsumsi dan
+                        pengeluaran. Dalam menghitung garis kemiskinan adalah dengan menggunakan rumus perhitungan garis
+                        kemiskinan (GK). Ketentuan penentuan garis kemiskinan adalah dengan menggunakan konsep berikut
+                      </p>
+                      <ol>
+                        <li>
+                          <p>Garis Kemiskinan (GK) merupakan penjumlahan dari Garis Kemiskinan makanan dengan Garis
+                            Kemiskinan Non Makanan. Penduduk yang memiliki rata – rata pengeluaran perkapita perbulan
+                            dibawah Garis kemiskinan dikategorikan sebagai penduduk miskin.</p>
+                        </li>
+                        <li>
+                          <p>Garis Kemiskinan Makanan (GKM) merupakan nilai pengeluaran kebutuhan minimum makanan yang
+                            disetarakan dengan 2100 kilokalori perkapita perhari. Paket komoditi kebutuhan dasar makanan
+                            diwakili oleh 52 jenis komoditi seperti padi-padian, umbi-umbian, ikan, daging, telur dan
+                            susu, sayuran, kacang-kacangan, buah-buahan, minyak dan lemak, dll.</p>
+                        </li>
+                        <li>
+                          <p>Garis Kemiskinan Non Makanan (GKNM) adalah kebutuhan minimum untuk perumahan, sandang,
+                            pendidikan dan kesehatan. Paket komoditi kebutuhan dasar non makanan diwakili oleh 51 jenis
+                            komoditi di perkotaan dan 47 jenis komoditi di pedesaan.</p>
+                        </li>
+                      </ol>
+                      <p>Perhitungan Garis Kemiskinan adalah sebagai berikut </p>
+                      <center>
+                        GK = GKM + GKNM <br> <br>
+                        GK = Garis Kemiskinan <br>
+                        GKM = Garis Kemiskinan Makanan <br>
+                        GKNM = Garis Kemiskinan Non Makan <br>
+                      </center>
+                      <p>Berikut teknik perhitungan Garis Kemiskinan Makanan</p>
+                      <ol>
+                        <li>
+                          <p>Tahap pertama adalah menentukan kelompok referensi yaitu 20 persen penduduk yang berada
+                            diatas Garis Kemiskinan Sementara (GKS). Kelompok referensi ini didefinisikan sebagai
+                            penduduk kelas marginal. GKS dihitung berdasar GK periode sebelumnya yang di-inflate dengan
+                            inflasi umum (IHK). Dari penduduk referensi ini kemudian dihitung Garis Kemiskinan Makanan
+                            (GKM) dan Garis Kemiskinan Non-Makanan (GKNM).</p>
+                        </li>
+                        <li>
+                          <p>Garis Kemiskinan Makanan (GKM) adalah jumlah nilai pengeluaran dari 52 komoditi dasar
+                            makanan yang riil dikonsumsi penduduk referensi yang kemudian disetarakan dengan 2100
+                            kilokalori perkapita perhari. Patokan ini mengacu pada hasil Widyakarya Pangan dan Gizi
+                            1978. Penyetaraan nilai pengeluaran kebutuhan minimum makanan dilakukan dengan menghitung
+                            harga rata-rata kalori dari ke-52 komoditi tersebut.</p>
+                        </li>
+                      </ol>
+                      <p>Berikut formula dasar yang digunakan dalam menghitung GKM.</p>
+                      <center>
+                        <img src="{% static 'document/gkm.png' %}" alt="SVR Ilustration"
+                          class="img-responsive mt-3 mb-3">
+                      </center>
+                      <p>Dimana:<br>
+                        <i>GKM * <sub>jp</sub></i> = Garis kemiskinan makanan daerah j (sebelum disetarakan menjadi 2100
+                        kilokalori) provinsi.<br>
+                        <i>P<sub>jkp</sub></i> = Rata – rata harga komoditi k di daerah j dan provinsi p.<br>
+                        <i>Q<sub>jkp</sub></i> = Rata – rata kuantitas komoditi k yang dikonsumsi di daerah j dan
+                        provinsi p.<br>
+                        <i>V<sub>jkp</sub></i> = Nilai pengeluaran untuk konsumsi komoditi k di daerah j dan provinsi
+                        p.<br>
+                        <i>j</i> = Daerah (perkotaan dan pedesaan)<br>
+                        <i>p</i> = Provinsi ke - p<br>
+                        Selanjutnya GKMj tersebut akan disetarakan dengan 2100 kilokalori dengan mengalikan 2100
+                        terhadap harga implisit rata – rata kalori menurut daerah j dari penduduk referensi [6],
+                        sehingga:
+                      </p>
+                      <center>
+                        <img src="{% static 'document/hk.png' %}" alt="SVR Ilustration"
+                          class="img-responsive mt-3 mb-3">
+                      </center>
+                      <p>Dimana:<br>
+                        <i>K<sub>jkp</sub></i> = Kalori dari komoditi k di daerah j di provinsi p<br>
+                        <i>HK<sub>jp</sub></i> = Harga rata – rata kalori di daerah j di provinsi p<br>
+                        Garis Kemiskinan Non Makanan (GKNM) merupakan penjumlahan nilai kebutuhan minimum dari komoditi
+                        non-makanan terpilih yang meliputi tempat tinggal, sandang, Pendidikan dan kesehatan. Berikut
+                        adalah formula dalam memperhitungkan GKNM [6]:
+                      </p>
+                      <center>
+                        <img src="{% static 'document/gknm.png' %}" alt="SVR Ilustration"
+                          class="img-responsive mt-3 mb-3">
+                      </center>
+                      <p>Dimana:
+                        <i>GKNM<sub>jp</sub></i> = Pengeluaran minimum non-makanan atau garis kemiskinan non-makanan
+                        daerah j dan provinsi p<br>
+                        <i>V<sub>kjp</sub></i> = Nilai pengeluaran per komoditi/sub-kelompok non-makanan daerah j dan
+                        provinsi p<br>
+                        <i>r<sub>kj</sub></i> = Rasio pengeluaran komoditi/sub-kelompok non makanan k menurut daerah
+                        (hasil SPKKD 2004) dan daerah j<br>
+                        <i>k<sub></sub></i> = Jenis komoditi non-makanan terpilih<br>
+                        <i>j<sub></sub></i> = Daerah (Perkotaan atau perdesaan)<br>
+                        <i>p<sub></sub></i> = Provinsi ke-p<br>
+                      </p>
+                    </div>
+                    <div class="tab-pane fade" id="tabs-icons-text-2" role="tabpanel"
+                      aria-labelledby="tabs-icons-text-2-tab">
+                      <h2>Support Vector Vegression (SVR)</h2>
+                      <p>Support vector regression (SVR) adalah pengembangan support vector machines (SVM) untuk
+                        kasus-kasus regresi. SVM adalah algoritma pembelajaran mesin yang menangani kasus prediksi
+                        dengan label dalam bentuk nilai bulat atau berkelas, seperti memprediksi kualitas daging sapi
+                        dengan beberapa kategori, memprediksi objek 3 dimensi, atau memprediksi suasana hati seseorang
+                        ketika mendengarkan audio. Kasus ini menggunakan dataset dengan label yang bulat atau nilai
+                        kelas sehingga support vector machines dapat digunakan untuk menangani prediksi dengan label
+                        tersebut.</p>
+                      <p>Pertama-tama, support vector regression diusulkan oleh Vapnik, Steven Golowich, dan Alex Smola
+                        pada tahun 1997. Algoritma regresi vektor bekerja dengan cara yang sama untuk support vector
+                        machines (SVM) dengan menemukan fungsi f (x) regresi untuk membentuk hyperplane yang sesuai
+                        dengan memasukkan data dengan kesalahan (ε) dan meminimalkan kesalahan (ε) sehingga hasil
+                        prediksi akan lebih sesuai.</p>
+                      <center>
+                        <img src="{% static 'document/svr_ilustration.png' %}" alt="SVR Ilustration"
+                          class="img-responsive mt-3 mb-3">
+                      </center>
+                      <p>Gambar di atas menunjukkan distribusi data prediktif dari label (y) dari variabel independen
+                        (x). Ilustrasi menunjukkan dimensi data adalah ruang satu dimensi sehingga hyperplane yang
+                        terbentuk adalah garis. Karena SVR menangani data keluaran kontinu, yang berarti nilai output
+                        memiliki kemungkinan tidak terbatas, maka itu ditangani oleh SVR menggunakan margin toleransi
+                        dengan nilai ε. Data di dalam batas toleransi tidak dihitung sebagai kesalahan dan sebaliknya.
+                        Nilai yang berada di luar batas toleransi dinyatakan sebagai penyimpangan oleh variabel slack
+                        (ξ).</p>
+                      <p>Mempertimbangkan dataset pelatihan, &#123;(<i>x<sub>1</sub></i>, <i>y<sub>1</sub></i>), ...,
+                        (<i>x<sub>i</sub></i>, <i>y<sub>i</sub></i>)&#125; yang sesuai dengan fitur di mana
+                        <i>x<sub>i</sub></i>, <i>y<sub>i</sub></i> masing-masing adalah vektor fitur dan output target.
+                        Kriteria standar SVR diberikan di bawah ini.</p>
+                      <center>
+                        <img src="{% static 'document/svr_formula_1.png' %}" alt="SVR Ilustration"
+                          class="img-responsive mt-3 mb-3">
+                      </center>
+                      <p>dimana w,C,ξ,ε, and b masing - masing adalah slope matrix, regularization parameter, slack
+                        variable for soft margin, tolerance margin, dan the intercept/bias. Dimana α - α<sup>*</sup>
+                        diasumsikan sebagai Lagrangian multipliers</p>
+                      <center>
+                        <img src="{% static 'document/svr_formula_2.png' %}" alt="SVR Ilustration"
+                          class="img-responsive mt-3 mb-3">
+                      </center>
+                      <p>Perkiraan fungsi yang dapat menyelesaikan permasalahan diatas adalah</p>
+                      <center>
+                        <img src="{% static 'document/svr_formula_3.png' %}" alt="SVR Ilustration"
+                          class="img-responsive mt-3 mb-3">
+                      </center>
+                      <p>output dari sebuah model adalah α^*- α.</p>
+                    </div>
+                    <div class="tab-pane fade" id="tabs-icons-text-3" role="tabpanel"
+                      aria-labelledby="tabs-icons-text-3-tab">
+                      <h2>Feature Selection</h2>
+                      <p>Dimensi data yang tinggi akan memengaruhi kinerja algoritma yang dirancang untuk menghitung
+                        data dengan dimensi rendah. Selain itu, dengan sejumlah besar fitur, itu akan membuat kinerja
+                        model pembelajaran menurun dan juga dapat mengurangi kinerja pada perhitungan data yang tidak
+                        terlihat. Pemilihan fitur akan meningkatkan kinerja pembelajaran, meningkatkan efisiensi
+                        perhitungan, mengurangi penyimpanan memori dan membangun model yang lebih baik. Seleksi fitur
+                        dalam penambangan data konvensional dapat dikelompokkan menjadi metode-metode berbasis kesamaan,
+                        berbasis-informasi, berbasis-pembelajaran-jarang, dan berbasis statistik serta metode-metode
+                        lain yang berkaitan dengan teknik yang digunakan.</p>
+                      <h2>Statistical-based Feature Selection</h2>
+                      <p>Algoritma pemilihan fitur didasarkan pada ukuran statistik yang berbeda, karena mereka
+                        bergantung pada ukuran statistik yang bervariasi. Banyak dari mereka menggunakan metode berbasis
+                        filter. Selain itu, sebagian besar algoritma berbasis statistik menganalisis fitur secara
+                        individual. Di bawah ini adalah beberapa algoritma pemilihan fitur yang mewakili kategori
+                        algoritma berbasis statistik.</p>
+                      <ol>
+                        <li>Chi-square (Chi<sup>2</sup>)</li>
+                        <p>Chi-square menghitung relevansi fitur dengan label. Semakin tinggi nilai chi-square semakin
+                          banyak informasi dari label yang dibawa oleh fitur dan semakin relevan fitur tersebut ke
+                          label. Persamaan chi-square dapat dilihat sebagai berikut.</p>
+                        <center>
+                          <img src="{% static 'document/chi_square_formula.png' %}" alt="Chi-square"
+                            class="img-responsive mt-3 mb-3">
+                        </center>
+
+                        <li>F-Score</li>
+                        <p>F-Score dikenal sebagai teknik sederhana untuk menghitung diskriminasi dari dua set bilangan
+                          real dengan vektor pelatihan dimana <i>x<sub>k</sub></i>, <i>k</i> = 1, 2, ..., <i>n</i></p>
+                        <center>
+                          <img src="{% static 'document/f_score_formula.png' %}" alt="F-Score"
+                            class="img-responsive mt-3 mb-3">
+                        </center>
+
+                        <li>Correlation-based Feature Selection (CFS)</li>
+                        <p>Gagasan utama CFS adalah menggunakan heuristik berbasis korelasi untuk mengevaluasi nilai
+                          subset fitur.</p>
+                        <center>
+                          <img src="{% static 'document/cfs_formula.png' %}" alt="Correlation-based Feature Selection"
+                            class="img-responsive mt-3 mb-3">
+                        </center>
+                      </ol>
+                    </div>
+                    <div class="tab-pane fade" id="tabs-icons-text-4" role="tabpanel"
+                      aria-labelledby="tabs-icons-text-4-tab">
+                      <p>Data yang digunakan untuk membangun model machine learning adalah data e-commerce OLX pada
+                        tahun 2016 dari Pulselab Jakarta. Data transaksi yang digunakan dikelompokkan berdasarkan kota
+                        di pulau Jawa. Dari data tersebut beberapa item dan aspek dipilih. Item yang dipilih adalah
+                        mobil, motor, rumah, apartemen, dan tanah. Dari setiap item yang ditinjau, aspek yang dinilai
+                        dapat dihitung dari data seperti harga, barang yang dijual, iklan yang dilihat, dan pembeli.</p>
+                      <center>
+                        <img src="{% static 'document/inside_dataset.png' %}" alt="Inside Dataset"
+                          class="img-responsive mt-3 mb-3">
+                      </center>
+                      <p>Untuk setiap aspek dari item, nilai agregasi seperti rata-rata, jumlah, dan standar deviasi
+                        dihitung. itu membuat kolom total dalam dataset ini adalah 96 kolom</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% include 'footer.html' %}
+</div>
+{% endblock %}
+
+{% block footer_js %}
+<script src="{% static 'admin_argon/assets/vendor/datatables.net/js/jquery.dataTables.min.js' %}"></script>
+<script src="{% static 'admin_argon/assets/vendor/datatables.net-bs4/js/dataTables.bootstrap4.min.js' %}"></script>
+<script>
+</script>
+{% endblock %}

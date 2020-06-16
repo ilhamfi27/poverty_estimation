@@ -5,7 +5,7 @@
     <div class="scrollbar-inner">
         <!-- Brand -->
         <div class="sidenav-header  align-items-center">
-            <a class="navbar-brand" href="javascript:void(0)">
+            <a class="navbar-brand" href="/">
                 SVR Predictor
             </a>
         </div>
@@ -33,9 +33,15 @@
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{% url 'datasets:list' %}">
+                        <a class="nav-link" href="{% url 'datasets:list' 'training' %}">
                             <i class="ni ni-bullet-list-67 text-primary"></i>
-                            <span class="nav-link-text">Dataset</span>
+                            <span class="nav-link-text">Dataset Training</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'datasets:list' 'testing' %}">
+                            <i class="ni ni-bullet-list-67 text-primary"></i>
+                            <span class="nav-link-text">Predictable Dataset</span>
                         </a>
                     </li>
                     <li class="nav-item">

@@ -18,7 +18,7 @@ from django.urls import path, include
 from predicts import views
 
 urlpatterns = [
-    path('', views.predictor),
+    path('', views.index),
     path('admin/', admin.site.urls),
     path('api/v1/', include('api.urls')),
     path('predicts/', include('predicts.urls')),

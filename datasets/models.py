@@ -15,6 +15,7 @@ class DatasetProfile(models.Model):
     name = models.CharField(max_length=50, default="")
     total_row = models.IntegerField(default=0)
     valid_date = models.DateField(auto_now_add=True)
+    type = models.CharField(max_length=50, default="")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

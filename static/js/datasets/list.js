@@ -249,14 +249,11 @@ function populateTable(resData) {
     number,
     resData.name,
     resData.valid_date,
-    `<button type="button" class="btn btn-primary" id="js-show-dataset-button" data-toggle="modal"
-    data-target="#js-dataset-detail-modal" data-id="${resData.id}"><i class="fas fa-eye"></i></button>
-    <button type="button" class="btn btn-danger" id="js-delete-dataset-button" data-toggle="modal"
-    data-target="#js-dataset-delete-modal" data-id="${resData.id}"><i class="fas fa-trash"></i></button>`
+    `<button type="button" class="btn btn-primary" id="js-show-dataset-button"
+      onclick="datasetDetail(${resData.id})"><i class="fas fa-eye"></i></button>
+    <button type="button" class="btn btn-danger" id="js-delete-dataset-button" data-id="${resData.id}">
+      <i class="fas fa-trash"></i></button>`
   ]).draw();
-  var row = datasetTable.row(':last');
-  row.attr("data-id", resData.id);
-  row.attr("id", "js-dataset-row");
 }
 /**
  * ===============================================

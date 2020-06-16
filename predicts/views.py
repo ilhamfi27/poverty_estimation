@@ -69,23 +69,14 @@ class Conversion():
 
 
 def index(request):
-    # get dataset
-    dataset_profile = DatasetProfile.objects.order_by('-valid_date').first()
-    dataset_data = Dataset.objects.filter(profile=dataset_profile)
-    bps_poverty_rate = dataset_data.values_list('BPS_poverty_rate')
 
     if request.method == 'GET':
-        best_prediction = Prediction.objects.order_by('-accuracy_value').first()
-        best_result, city_result = get_results(dataset_data, best_prediction)
-        list_bps_poverty_rate = [i[0] for i in bps_poverty_rate]
-
-        prediction_result = PredictionResult.objects.filter(prediction=best_prediction)
-
-        context = {}
-        context['best_plot'] = draw_figure(best_result, list_bps_poverty_rate)
-        context['prediction_result'] = prediction_result
-
-    return render(request, 'predicts/index.html', context=context)
+        lang = request.GET.get("lang")
+        if lang == "id":
+            template = 'predicts/index_idn.html'
+        else:
+            template = 'predicts/index.html'
+    return render(request, template)
 
 
 def get_results(dataset_data, pred_instance):
@@ -129,8 +120,10 @@ def predictor(request):
                                                  "accuracy_value",
                                                  "error_value")
     dataset_profiles = DatasetProfile.objects.values("id",
-                                                 "valid_date",
-                                                 "total_row")
+                                                     "name",
+                                                     "type",
+                                                     "valid_date",
+                                                     "total_row")
 
     saved_ml_model = [dict(zip(("id", "name", "feature_selection", "accuracy_value", "error_value"), data)) for data in ml_model]
     print(saved_ml_model, flush=True)
