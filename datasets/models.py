@@ -26,7 +26,7 @@ class DatasetProfile(models.Model):
 class Dataset(models.Model):
     city = models.ForeignKey(City, on_delete=models.CASCADE, blank=True, null=True)
     profile = models.ForeignKey(DatasetProfile, on_delete=models.CASCADE, blank=True, null=True, default=None)
-    BPS_poverty_rate = models.FloatField(default=0)
+    BPS_poverty_rate = models.FloatField(default=0, blank=True, null=True)
     sum_price_car = models.FloatField(default=0)
     avg_price_car = models.FloatField(default=0)
     std_price_car = models.FloatField(default=0)

@@ -62,17 +62,37 @@ prediction_column_names = [
 class DatasetProfileList(views.APIView):
 
     def post(self, request, format=None):
-        print(request.data, flush=True)
         serializer = DatasetProfileSerializer(data=request.data)
 
         if serializer.is_valid():
+            response = dict()
+
             name = request.data["name"]
             valid_date = request.data["valid_date"]
             type = request.data["type"]
             source_file = request.FILES['source_file']
 
-            file_extension = repr(str(source_file).split('.')[-1])
-            dataframe = pd.read_excel(source_file)
+            file_name = source_file.name
+
+            if (file_name).endswith(".xlsx"):
+                dataframe = pd.read_excel(source_file)
+            elif file_name.endswith(".csv"):
+                dataframe = pd.read_csv(source_file)
+            else:
+                response["message"] = "The file extension is not supported"
+                return Response(response, status=st.HTTP_400_BAD_REQUEST)
+
+            check = any(item in dataframe.columns.values for item in ['city_name', 'province_name'])
+            if check is True:
+                dataframe = dataframe.drop(['city_name', 'province_name'], axis=1)
+
+            contained = [a in dataset_column_names for a in dataframe.columns.values]
+            print(contained, flush=True)
+            if False in contained:
+                response["message"] = "Incompatible Dataset"
+                return Response(response, status=st.HTTP_400_BAD_REQUEST)
+
+
             dataframe_data = np.nan_to_num(dataframe.iloc[0:, :].values)
             total_row = len(dataframe_data)
 
@@ -81,9 +101,7 @@ class DatasetProfileList(views.APIView):
 
             source_data = []
             for row in dataframe_data:
-                row_data = []
-                for cell in row:
-                    row_data.append(cell)
+                row_data = [cell for cell in row]
                 zipped_data = dict(zip(dataset_column_names, row_data))
 
                 # make city id integer instead of float
@@ -298,7 +316,7 @@ class Predictor(views.APIView):
                 "error_value": error_value,
                 "pred_result": city_result,
                 "feature_num": feature_num,
-                "ranked_index": best_feature_list,
+                "ranked_index": ",".join([str(i) for i in best_feature_list]),
             }
             # save model
             self.save_prediction_to_db(data_for_input)

@@ -274,8 +274,18 @@ function formSubmit() {
         processAjaxResponse(res);
       },
       error: function (err) {
-        if (err.status != 500) {
-          showErrorModal(err.responseJSON.message);
+        if (err.status == 500) {
+          Swal.fire(
+            "Ooops!",
+            "Something went wrong!",
+            "error"
+          );
+        } else {
+          Swal.fire(
+            "Ooops!",
+            err.responseJSON.message,
+            "error"
+          );
         }
       }
     });
