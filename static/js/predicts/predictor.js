@@ -30,6 +30,9 @@ const datasetPredict = $("#dataset-predict");
 
 const saveButton = $("#js-save-model-button");
 
+const modelResultPanel = $("#js-model-result-panel")
+const tableResultPanel = $("#js-table-result-panel")
+
 const appUrl = "http://localhost:8000"
 
 let modelSelected = false;
@@ -79,20 +82,20 @@ $(document).ready(function () {
  * ==============================================
  */
 function mapLayer(mymap) {
-  // L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-  //   attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-  // }).addTo(mymap);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+  }).addTo(mymap);
 
-  L.tileLayer(
-    'https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token=pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4NXVycTA2emYycXBndHRqcmZ3N3gifQ.rJcFIG214AriISLbB6B5aw', {
-      maxZoom: 18,
-      attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, ' +
-        '<a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' +
-        'Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
-      id: 'mapbox/light-v9',
-      tileSize: 512,
-      zoomOffset: -1
-    }).addTo(mymap);
+  // L.tileLayer(
+  //   'https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token=pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4NXVycTA2emYycXBndHRqcmZ3N3gifQ.rJcFIG214AriISLbB6B5aw', {
+  //     maxZoom: 18,
+  //     attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, ' +
+  //       '<a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' +
+  //       'Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
+  //     id: 'mapbox/light-v9',
+  //     tileSize: 512,
+  //     zoomOffset: -1
+  //   }).addTo(mymap);
 }
 
 function mappingInit(mymap) {
@@ -188,7 +191,7 @@ function cloropathLayer(map, mapping) {
   }).addTo(map);
 
   map.attributionControl.addAttribution(
-    'Population data &copy; <a href="http://census.gov/">US Census Bureau</a>');
+    'Poverty Prediction &copy; 2020');
 }
 
 function choroplathLegend(map) {
@@ -334,34 +337,24 @@ function formSubmit() {
 }
 
 function processAjaxResponse(res) {
-  if (!res.best_model) {
-    $("#js-r2").text(res.accuracy_value.toFixed(3));
-    $("#js-rmse").text(res.error_value.toFixed(3));
-    $("#js-regularization").text(res.regularization);
-    $("#js-epsilon").text(res.epsilon);
-    $("#js-feature_num").text(res.feature_num);
+  $("#js-r2").text(res.accuracy_value.toFixed(3));
+  $("#js-rmse").text(res.error_value.toFixed(3));
+  $("#js-regularization").text(res.regularization);
+  $("#js-epsilon").text(res.epsilon);
+  $("#js-feature_num").text(res.feature_num);
 
-    $("#js-sorted_feature ol").remove();
-    const list = document.createElement('ol');
+  $("#js-sorted_feature ol").remove();
+  const list = document.createElement('ol');
 
-    res.sorted_feature.forEach(item => {
-      const listItem = document.createElement('li');
+  res.sorted_feature.forEach(item => {
+    const listItem = document.createElement('li');
 
-      listItem.innerHTML = `${item}`;
-      list.appendChild(listItem);
-    });
+    listItem.innerHTML = `${item}`;
+    list.appendChild(listItem);
+  });
 
-    $("#js-sorted_feature").append(list);
-
-  } else {
-    $("#js-r2").text("");
-    $("#js-rmse").text("");
-    $("#js-regularization").text("");
-    $("#js-epsilon").text("");
-    $("#js-feature_num").text("");
-
-    $("#js-sorted_feature ol").remove();
-  }
+  $("#js-sorted_feature").append(list);
+    
   populateTable(res.result_cities);
   populateChartResponse(res);
   scrollPageAfterForm();

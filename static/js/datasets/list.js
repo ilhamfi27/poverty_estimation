@@ -224,6 +224,12 @@ function datasetEdit() {
             .invalidate();
 
           $("#js-edit-dataset-modal").modal("hide");
+
+          Swal.fire(
+            'Updated!',
+            'Your dataset has been Updated.',
+            'success'
+          );
         },
         error: (err) => {
           Swal.fire(
@@ -300,10 +306,10 @@ function populateTable(resData) {
     resData.valid_date,
     `<button type="button" class="btn btn-sm btn-primary" id="js-show-dataset-button"
       onclick="datasetDetail(${resData.id})"><i class="fas fa-eye"></i></button>
-    <button type="button" class="btn btn-sm btn-danger" id="js-delete-dataset-button" data-id="${resData.id}">
-      <i class="fas fa-trash"></i></button>
     <button type="button" class="btn btn-sm btn-success" id="js-edit-dataset-button" data-id="${resData.id}">
-      <i class="fas fa-edit"></i></button>`
+      <i class="fas fa-edit"></i></button>
+    <button type="button" class="btn btn-sm btn-danger" id="js-delete-dataset-button" data-id="${resData.id}">
+      <i class="fas fa-trash"></i></button>`
   ]).draw();
 }
 /**

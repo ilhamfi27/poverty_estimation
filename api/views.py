@@ -190,13 +190,17 @@ class PredictionResultDetail(mixins.RetrieveModelMixin,
     def get(self, request, *args, **kwargs):
         prediction = self.queryset.get(pk=kwargs['pk'])
         result = PredictionResult.objects.filter(prediction=prediction)
-        response = []
+        predict_result = []
         for r in result:
             city = City.objects.filter(pk=r.city.id).first()
             res = model_to_dict(r)
             res['province'] = city.province
             res['city'] = city.name
-            response.append(res)
+            predict_result.append(res)
+
+        response = model_to_dict(prediction)
+        response["predict_result"] = predict_result
+        response["sorted_feature"] = util.rank_items([int(i) for i in prediction.ranked_index.split(",")])
         return Response(response, status=st.HTTP_200_OK)
 
 
@@ -279,16 +283,22 @@ class Predictor(views.APIView):
                 "features": geojson_features
             }
 
+            regularization = 10
+            epsilon = 0.5
+            accuracy_value = 0.42765
+            error_value = 13.882
+            feature_num = 90
+
             data_for_input = {
                 "name": dataset_training_profile.name + " - " + now_time.strftime("%d-%m-%Y, %H:%M:%S"),
                 "feature_selection": None,
-                "regularization": None,
-                "epsilon": None,
-                "accuracy_value": None,
-                "error_value": None,
+                "regularization": regularization,
+                "epsilon": epsilon,
+                "accuracy_value": accuracy_value,
+                "error_value": error_value,
                 "pred_result": city_result,
-                "feature_num": None,
-                "ranked_index": None,
+                "feature_num": feature_num,
+                "ranked_index": best_feature_list,
             }
             # save model
             self.save_prediction_to_db(data_for_input)
@@ -296,6 +306,14 @@ class Predictor(views.APIView):
             response["success"] = True
             response["new_model"] = False
             response["best_model"] = True
+            response["result_cities"] = poverty_each_city
+            response["region_geojson"] = region_geojson
+            response["accuracy_value"] = accuracy_value
+            response["error_value"] = error_value
+            response["regularization"] = regularization
+            response["epsilon"] = epsilon
+            response["feature_num"] = feature_num
+            response["sorted_feature"] = util.rank_items(ranked_index=best_feature_list)
             response["result_cities"] = poverty_each_city
             response["region_geojson"] = region_geojson
             return Response(response, status=st.HTTP_200_OK)
@@ -354,8 +372,6 @@ class Predictor(views.APIView):
                 # save model
                 self.save_prediction_to_db(data_for_input)
 
-                feature_names = dataset_column_names[2:]
-                # sorted_feature = [util.humanize_feature_name(feature_names[i]) for i in best_score[4]]
                 sorted_feature = util.rank_items(ranked_index=best_score[4])
 
                 poverty_each_city = []

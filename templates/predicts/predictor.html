@@ -51,7 +51,7 @@
 <div class="container-fluid mt--6">
   <div class="row">
     <div class="col-xl">
-      <div class="card">
+      <div class="card" style="height:1000px">
         <div class="card-body">
           <div class="multisteps-form">
             <!--progress bar-->
@@ -310,7 +310,7 @@
     </div>
   </div>
   <div class="row">
-    <div class="col-xl-5">
+    <div class="col-xl-5" id="js-model-result-panel">
       <div class="card">
         <div class="card-header">
           <div class="row align-items-center">
@@ -356,7 +356,7 @@
         </div>
       </div>
     </div>
-    <div class="col-xl-7">
+    <div class="col-xl-7" id="js-table-result-panel">
       <div class="card" id="js-chart-box">
         <div class="card-header">
           <div class="row align-items-center">
@@ -450,10 +450,10 @@
           </div>
           <div class="modal-body">
             <div class="form-group">
-              <label for="new-dataset-name" class="form-control-label">
+              <label for="new-dataset-training-name" class="form-control-label">
                 New Dataset Name
               </label>
-              <input type="text" class="form-control" id="new-dataset" name="name"
+              <input type="text" class="form-control" id="new-dataset-training-name" name="name"
                 placeholder="Pick a Name For The New Model" required>
             </div>
             <div class="form-group">
@@ -466,17 +466,17 @@
               </div>
             </div>
             <div class="form-group">
-              <label for="dataset-source" class="form-control-label">Dataset File</label>
+              <label for="training-dataset-source" class="form-control-label">Dataset File</label>
               <div class="custom-file">
-                <input type="file" class="custom-file-input" id="dataset-source" name='source_file'
+                <input type="file" class="custom-file-input" id="training-dataset-source" name='source_file'
                   accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel"
                   required>
                 <label class="custom-file-label" for="customFileLang">Select file</label>
               </div>
             </div>
             <div class="form-group">
-              <label for="dataset-data" class="form-control-label">Dataset Valid Date</label>
-              <input type="date" class="form-control" id="dataset-data" name="valid_date" placeholder="Dataset Date"
+              <label for="training-dataset-data" class="form-control-label">Dataset Valid Date</label>
+              <input type="date" class="form-control" id="training-dataset-data" name="valid_date" placeholder="Dataset Date"
                 required>
             </div>
           </div>

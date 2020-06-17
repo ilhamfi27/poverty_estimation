@@ -136,7 +136,25 @@ function predictionDetails() {
       method: 'GET',
       async: false,
       success: (res) => {
-        populateTable(res);
+        populateTable(res.predict_result);
+
+        $("#js-r2").text(res.accuracy_value.toFixed(3));
+        $("#js-rmse").text(res.error_value.toFixed(3));
+        $("#js-regularization").text(res.regularization);
+        $("#js-epsilon").text(res.epsilon);
+        $("#js-feature_num").text(res.feature_num);
+        
+        $("#js-sorted_feature ol").remove();
+        const list = document.createElement('ol');
+      
+        res.sorted_feature.forEach(item => {
+          const listItem = document.createElement('li');
+      
+          listItem.innerHTML = `${item}`;
+          list.appendChild(listItem);
+        });
+      
+        $("#js-sorted_feature").append(list);
         $("#js-detail-prediction-modal").modal("show");
       }
     });

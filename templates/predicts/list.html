@@ -45,8 +45,8 @@
                   <tr>
                     <td>{{ forloop.counter }}</td>
                     <td>{{ data.name }}</td>
-                    <td>{{ data.accuracy_value }}</td>
-                    <td>{{ data.error_value }}</td>
+                    <td>{{ data.accuracy_value|floatformat:4 }}</td>
+                    <td>{{ data.error_value|floatformat:4 }}</td>
                     <td>
                       <button type="button" class="btn btn-sm btn-primary" id="js-detail-prediction-button"
                         data-id="{{data.id}}">
@@ -105,7 +105,7 @@
 <!-- Modal -->
 <div class="modal fade" id="js-detail-prediction-modal" tabindex="-1" role="dialog"
   aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
-  <div class="modal-dialog modal-lg" role="document">
+  <div class="modal-dialog modal-xl" role="document">
     <div class="modal-content">
       <div class="modal-header">
         <h5 class="modal-title" id="exampleModalLongTitle">Prediction Result</h5>
@@ -114,20 +114,45 @@
         </button>
       </div>
       <div class="modal-body">
-
         <div class="row">
-          <div class="col">
+          <div class="col-4">
             <div class="card">
-              <div class="card-header">
-                <div class="row align-items-center">
-                  <div class="col">
-                    <h6 class="text-light text-uppercase ls-1 mb-1">Cities Poverty Rate</h6>
-                    <h5 class="h3 mb-0"></h5>
-                  </div>
-                  <div class="col">
-                  </div>
+              <div class="card-body">
+                <span class="row">
+                  <span class="col">Model Name</span>
+                  <span class="col float-right" id="js-model-name"></span>
+                </span>
+                <span class="row">
+                  <span class="col">Best R<sup>2</sup></span>
+                  <span class="col float-right" id="js-r2"></span>
+                </span>
+                <span class="row">
+                  <span class="col">Best RMSE</span>
+                  <span class="col float-right" id="js-rmse"></span>
+                </span>
+                <span class="row">
+                  <span class="col">Regularization (C)</span>
+                  <span class="col float-right" id="js-regularization"></span>
+                </span>
+                <span class="row">
+                  <span class="col">Epsilon</span>
+                  <span class="col float-right" id="js-epsilon"></span>
+                </span>
+                <span class="row">
+                  <span class="col">Feature Used</span>
+                  <span class="col float-right" id="js-feature_num"></span>
+                </span>
+                <span class="row">
+                  <span class="col">Most Relevant Features:</span>
+                </span>
+                <div class="row">
+                  <div class="col" id="js-sorted_feature"></div>
                 </div>
               </div>
+            </div>
+          </div>
+          <div class="col-8">
+            <div class="card">
               <div class="card-body">
                 <div class="table-responsive table-hover point_row_table">
                   <div>

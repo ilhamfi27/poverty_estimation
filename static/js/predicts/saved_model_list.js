@@ -8,6 +8,7 @@ $(document).ready(function () {
   dataTableInit();
   modelDelete();
   modelEdit();
+  modelDetails();
 });
 /**
  * ===============================================
@@ -114,6 +115,28 @@ function modelEdit() {
           );
         }
       });
+    });
+  });
+}
+
+function modelDetails() {
+  $('#js-model-table tbody').on('click', '#js-detail-model-button', function () {
+    const id = $(this).data("id");
+    console.log(id);
+    
+    $.ajax({
+      url: appUrl + `/api/v1/ml_model/${id}`,
+      method: 'GET',
+      async: false,
+      success: (res) => {
+        $("#js-model-name").text(res.name);
+        $("#js-r2").text(res.accuracy_value);
+        $("#js-rmse").text(res.error_value);
+        $("#js-regularization").text(res.regularization);
+        $("#js-epsilon").text(res.epsilon);
+        $("#js-feature_num").text(res.feature_num);
+        $("#js-detail-model-modal").modal("show");
+      }
     });
   });
 }
