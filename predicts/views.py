@@ -4,6 +4,7 @@ from datasets.models import Dataset, City, DatasetProfile, CityGeography
 from django.forms.models import model_to_dict
 from .models import Prediction, PredictionResult, MachineLearningModel
 from .validator import validate_request, saving_model_validation
+from django.contrib.auth.decorators import login_required
 import predicts.svr as svr
 import matplotlib.pyplot as plt
 import os
@@ -77,7 +78,7 @@ class Conversion():
         strings = the_string.split(",")
         return [int(i) for i in strings]
 
-
+@login_required
 def index(request):
     if request.method == 'GET':
         lang = request.GET.get("lang")
@@ -88,6 +89,7 @@ def index(request):
     return render(request, template)
 
 
+@login_required
 def predict_list(request):
     if request.method == "GET":
         predictions = Prediction.objects.values_list("id",
@@ -107,6 +109,7 @@ def predict_list(request):
         return render(request, 'predicts/list.html', context=context)
 
 
+@login_required
 def predictor(request):
     ml_model = MachineLearningModel.objects.values_list("id",
                                                         "name",
@@ -136,6 +139,7 @@ def predictor(request):
         return render(request, 'predicts/predictor.html', context=context)
 
 
+@login_required
 def ml_model(request):
     ml_model = MachineLearningModel.objects.values_list("id",
                                                         "name",

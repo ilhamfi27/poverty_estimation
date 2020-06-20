@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
+    'accounts',
     'predicts',
     'datasets',
     'api',
@@ -70,6 +71,10 @@ TEMPLATES = [
         },
     },
 ]
+
+LOGIN_URL = '/accounts/user_login/'
+LOGIN_REDIRECT_URL = '/'
+LOGOUT_REDIRECT_URL = '/accounts/user_login/'
 
 WSGI_APPLICATION = 'final_task.wsgi.application'
 

@@ -2,6 +2,7 @@ from django.http import JsonResponse
 from django.shortcuts import render, redirect
 from django.forms.models import model_to_dict
 from .models import Dataset, City, DatasetProfile, CityGeography
+from django.contrib.auth.decorators import login_required
 import numpy as np
 import pandas as pd
 import json
@@ -70,6 +71,7 @@ def new(request):
         return render(request, 'datasets/new.html', {})
 
 
+@login_required
 def list(request, *args, **kwargs):
     table_header = dataset_column_names
 
